@@ -1,0 +1,836 @@
+<!doctype html><html lang="ko" data-theme="light"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>좋은세상</title><link href="https://fonts.googleapis.com/css2?family=Gowun+Batang&family=IBM+Plex+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Nanum+Myeongjo:wght@700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Noto+Serif+KR:wght@300;400&display=swap" rel="stylesheet"><style>
+:root{
+  --bg:#faf7f1; --surface:#fffdf8; --ink:#2b2620; --ink-soft:#5c534a;
+  --muted:#938779; --line:#e8e0d3; --accent:#bf4e30; --accent-soft:#e9d9cf;
+  --shadow:0 8px 40px rgba(60,40,20,.10);
+  --serif:'Pretendard','Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',system-ui,sans-serif;
+  --fs:19px; --maxw:660px;
+}
+html[data-theme="dark"]{
+  --bg:#151210; --surface:#1e1a16; --ink:#ece4d7; --ink-soft:#c3b8a8;
+  --muted:#8f8474; --line:#2e2820; --accent:#e5794f; --accent-soft:#3a2b23;
+  --shadow:0 8px 40px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--serif); font-size:var(--fs); line-height:1.95;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  word-break:keep-all; overflow-wrap:break-word;
+}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:60;transition:width .1s linear}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:.5rem;
+  padding:.55rem .8rem;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar .tb-title{font-size:.9rem;font-weight:600;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .spacer{flex:1}
+.iconbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+  width:38px;height:38px;border-radius:10px;font-size:1rem;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:.15s;flex:none;font-family:var(--serif)}
+.iconbtn:hover{border-color:var(--accent);color:var(--accent)}
+.iconbtn.sm{width:34px;height:34px;font-size:.85rem}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;visibility:hidden;transition:.25s;z-index:70}
+.backdrop.open{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;left:0;height:100%;width:min(86vw,360px);background:var(--surface);
+  z-index:80;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  box-shadow:var(--shadow);display:flex;flex-direction:column;border-right:1px solid var(--line)}
+.drawer.open{transform:none}
+.drawer .dhead{padding:1.1rem 1.2rem .8rem;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between}
+.drawer .dhead b{font-size:1rem}
+.toc{overflow-y:auto;padding:.6rem 0 2rem}
+.toc .part-t{padding:1rem 1.2rem .35rem;font-size:.72rem;letter-spacing:.08em;font-weight:700;
+  color:var(--accent);text-transform:uppercase}
+.toc .part-name{padding:0 1.2rem .5rem;font-size:.82rem;color:var(--muted);line-height:1.5}
+.toc a{display:flex;gap:.6rem;padding:.42rem 1.2rem;color:var(--ink-soft);text-decoration:none;
+  font-size:.9rem;line-height:1.5;transition:.12s;border-left:2px solid transparent}
+.toc a .n{color:var(--muted);font-variant-numeric:tabular-nums;flex:none;min-width:1.6em;text-align:right}
+.toc a:hover{background:var(--bg);color:var(--ink)}
+.toc a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-soft)}
+/* cover (image) */
+.cover{min-height:calc(100svh - 53px);display:flex;align-items:center;justify-content:center;
+  background:#000;padding:0;position:relative;overflow:hidden}
+.cover-img{max-width:100%;max-height:calc(100svh - 53px);width:auto;height:auto;object-fit:contain;display:block}
+/* 텍스트 표지 (표지 이미지 없을 때) */
+.cover.text{background:var(--bg);flex-direction:column;padding:3rem 1.8rem;text-align:center}
+.cover .cover-kick{font-size:.78rem;letter-spacing:.3em;color:var(--accent);font-weight:700;margin-bottom:2.2rem}
+.cover .cover-title{font-size:clamp(2.3rem,9.5vw,3.9rem);font-weight:800;line-height:1.28;
+  margin:0 0 1.7rem;letter-spacing:-.02em;color:var(--ink);word-break:keep-all}
+.cover .cover-rule{width:48px;height:2px;background:var(--accent);opacity:.6;margin:0 auto 1.7rem}
+.cover .cover-sub{font-size:clamp(.95rem,3.4vw,1.08rem);color:var(--ink-soft);line-height:1.75;
+  max-width:23em;margin:0 auto;word-break:keep-all}
+.cover.text .scroll-hint{color:var(--muted);text-shadow:none}
+.cover .scroll-hint{position:absolute;bottom:1.2rem;left:50%;transform:translateX(-50%);
+  font-size:.75rem;color:rgba(255,255,255,.72);text-shadow:0 1px 5px rgba(0,0,0,.7);
+  animation:bob 2s ease-in-out infinite;z-index:2;letter-spacing:.02em}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,6px)}}
+.part{min-height:78vh;display:flex;flex-direction:column;justify-content:center;text-align:center;
+  padding:5rem 1.35rem;scroll-margin-top:70px}
+.part .pnum{font-size:.85rem;letter-spacing:.3em;color:var(--accent);font-weight:700;margin-bottom:1.4rem}
+.part .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 auto 1.4rem}
+.part h2{font-size:clamp(1.7rem,6vw,2.5rem);line-height:1.35;margin:0 auto;font-weight:800;letter-spacing:-.01em;max-width:17em}
+.book-toc{max-width:var(--maxw);margin:0 auto;padding:4.5rem 1.6rem 3rem;scroll-margin-top:64px}
+.book-toc .bt-kick{text-align:center;font-size:.78rem;letter-spacing:.32em;color:var(--accent);font-weight:700;margin-bottom:1rem}
+.book-toc .bt-title{text-align:center;font-size:1.9rem;font-weight:800;margin:0 0 3.2rem;letter-spacing:-.01em}
+.updbox{max-width:36em;margin:0 auto 2.8rem;padding:1.05rem 1.25rem 1.1rem;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.updbox .upd-head{font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:.7rem;display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;letter-spacing:.01em}
+.updbox .upd-note{font-size:.72rem;font-weight:500;color:var(--muted);letter-spacing:0}
+.updbox .upd-list{list-style:none;margin:0;padding:0}
+.updbox .upd-list li{display:flex;gap:.55rem;padding:.28rem 0;font-size:.83rem;color:var(--ink-soft);line-height:1.55;align-items:baseline}
+.updbox .upd-date{flex:none;color:var(--muted);font-variant-numeric:tabular-nums;font-size:.78rem}
+.updbox .upd-sep{flex:none;color:var(--line)}
+.bt-part{margin-bottom:3rem}
+.bt-part .bt-pnum{font-size:.74rem;letter-spacing:.16em;color:var(--accent);font-weight:700;margin-bottom:.35rem}
+.bt-part .bt-ptitle{font-size:1.14rem;font-weight:700;margin-bottom:1.1rem;line-height:1.5}
+.bt-part ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.bt-part li{border-bottom:1px solid var(--line)}
+.bt-part a{display:flex;gap:.85rem;align-items:baseline;padding:.66rem .2rem;text-decoration:none;color:var(--ink-soft);font-size:.95rem;line-height:1.55;transition:.12s}
+.bt-part a:hover{color:var(--accent)}
+.bt-part a .n{flex:none;min-width:1.8em;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;font-size:.85rem}
+/* 읽기 경로 */
+.paths{max-width:var(--maxw);margin:0 auto;padding:4rem 1.6rem 2rem;scroll-margin-top:64px}
+.paths .bt-kick{text-align:center;font-size:.78rem;letter-spacing:.32em;color:var(--accent);font-weight:700;margin-bottom:1rem}
+.paths .bt-title{text-align:center;font-size:1.6rem;font-weight:800;margin:0 0 2.4rem;letter-spacing:-.01em}
+.course{border:1px solid var(--line);border-radius:14px;padding:1.3rem 1.3rem .5rem;margin-bottom:1.4rem;background:var(--surface)}
+.course-head{display:flex;align-items:center;gap:.85rem;margin-bottom:1rem}
+.course-ico{font-size:1.55rem;flex:none;line-height:1}
+.course-title{font-size:1.12rem;font-weight:800;letter-spacing:-.01em}
+.course-desc{font-size:.82rem;color:var(--muted);margin-top:.15rem}
+.course-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.course-list li{border-bottom:1px solid var(--line)}
+.course-list a{display:flex;gap:.7rem;align-items:baseline;padding:.6rem .1rem;text-decoration:none;color:var(--ink-soft);font-size:.92rem;line-height:1.5;transition:.12s}
+.course-list a:hover{color:var(--accent)}
+.course-list a .n{flex:none;min-width:2em;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;font-size:.82rem}
+/* 파트 간 연결글 / 맺음글 */
+.bridge{max-width:var(--maxw);margin:0 auto;padding:3.4rem 1.6rem 3.8rem;text-align:center}
+.bridge::before{content:"";display:block;width:40px;height:2px;background:var(--accent);opacity:.5;margin:0 auto 2.3rem}
+.bridge p{color:var(--ink-soft);font-size:1.02em;line-height:1.9;margin:0 auto 1rem;max-width:26em}
+.bridge.epilogue{padding-top:4.6rem;padding-bottom:6rem;scroll-margin-top:64px}
+.bridge.epilogue::before{display:none}
+.bridge .bridge-kick{font-size:.78rem;letter-spacing:.3em;color:var(--accent);font-weight:700;margin-bottom:1.9rem}
+.bridge.epilogue p{color:var(--ink-soft)}
+/* prologue */
+.prologue{max-width:var(--maxw);margin:0 auto;padding:4.5rem 1.6rem 2rem;scroll-margin-top:64px}
+.prologue .pro-kick{text-align:center;font-size:.78rem;letter-spacing:.32em;color:var(--accent);font-weight:700;margin-bottom:1.7rem}
+.prologue .pro-title{text-align:center;font-size:clamp(1.7rem,5.5vw,2.3rem);font-weight:800;line-height:1.36;margin:0 0 2.6rem;letter-spacing:-.01em}
+.preface .pro-kick{margin-bottom:2.4rem}
+.preface p{color:var(--ink-soft)}
+.prologue p{margin:0 0 1.5rem;line-height:1.9}
+.prologue figure{margin:2.8rem 0}
+.prologue figure img{width:100%;height:auto;border-radius:12px;box-shadow:var(--shadow);display:block}
+.prologue figcaption{text-align:center;font-size:.85rem;color:var(--muted);line-height:1.65;margin-top:1rem;padding:0 .4rem}
+.prologue .pro-divider{width:44px;height:2px;background:var(--accent);opacity:.5;border:0;margin:3.6rem auto}
+.pro-callout{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:12px;padding:1.7rem 1.5rem .7rem;margin:2.6rem 0;box-shadow:var(--shadow)}
+.pro-callout .co-p{font-size:.95rem;line-height:1.8;color:var(--ink-soft);margin:0 0 1.05rem}
+.pro-callout .co-p:first-child{color:var(--accent);font-weight:700;letter-spacing:.02em}
+.pro-callout .co-div{height:1px;background:var(--line);border:0;margin:1.25rem 0}
+.prologue .pro-shead{text-align:center;font-size:1.12rem;font-weight:800;color:var(--ink);
+  margin:3.6rem 0 .6rem;letter-spacing:-.01em}
+.prologue .pro-mark{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;
+  border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:.95rem;margin:2.4rem 0 1.1rem}
+.chapter{position:relative;max-width:var(--maxw);margin:0 auto;padding:3.6rem 1.6rem 1.2rem;scroll-margin-top:64px;
+  content-visibility:auto;contain-intrinsic-size:0 1200px}
+.chapter .cnum{font-size:.82rem;font-weight:700;color:var(--accent);letter-spacing:.05em;margin-bottom:.7rem}
+.chapter h3{font-size:clamp(1.5rem,5vw,2rem);line-height:1.36;margin:0 0 1rem;font-weight:800;letter-spacing:-.01em}
+.chapter .csub{font-size:1.05rem;line-height:1.7;color:var(--ink-soft);border-left:3px solid var(--accent);
+  padding:.15rem 0 .15rem 1rem;margin:0 0 2.1rem;font-weight:500}
+.chapter .csub::before{content:"“"}
+.chapter .csub::after{content:"”"}
+.chapter p{margin:0 0 1.35rem}
+/* 꼭지 삽화 (도해) — 다크모드에서도 흰 카드로 */
+.chapter figure.dgm{margin:2.6rem 0 1.4rem;background:#fff;border:1px solid var(--line);
+  border-radius:12px;padding:.85rem;box-shadow:var(--shadow)}
+.chapter figure.dgm img{width:100%;height:auto;display:block;border-radius:4px}
+.chapter figure.dgm figcaption{text-align:center;font-size:.84rem;color:#64748B;line-height:1.6;margin-top:.7rem}
+.chapter .divider{height:1px;background:var(--line);border:0;margin:3.4rem auto;width:70%}
+.chapter:last-of-type .divider{display:none}
+/* prev/next chapter nav */
+.chnav{display:flex;gap:.7rem;margin:2.4rem 0 0}
+.chnav a{flex:1;min-width:0;text-decoration:none;color:var(--ink-soft);font-size:.86rem;line-height:1.45;
+  padding:.7rem .9rem;border:1px solid var(--line);border-radius:10px;transition:.15s;background:var(--surface)}
+.chnav a:hover{border-color:var(--accent);color:var(--accent)}
+.chnav a.next{text-align:right}
+.chnav a.ch-hide{visibility:hidden;pointer-events:none}
+.chnav a .dir{display:block;font-size:.72rem;color:var(--muted);margin-bottom:.18rem}
+.chnav a .t{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* resume reading bar */
+#resumeBar{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);z-index:45;
+  display:none;align-items:center;gap:.5rem;background:var(--accent);color:#fff;
+  padding:.58rem 1.1rem;border-radius:22px;box-shadow:var(--shadow);cursor:pointer;
+  font-size:.85rem;font-weight:600;font-family:var(--serif)}
+#resumeBar.show{display:inline-flex}
+#resumeBar .rb-x{opacity:.85;padding-left:.2rem;font-weight:400}
+/* per-chapter copy button */
+.copy-btn{position:absolute;top:1.5rem;right:1.6rem;z-index:5;display:inline-flex;align-items:center;
+  gap:.34rem;border:1px solid var(--line);background:var(--surface);color:var(--muted);
+  padding:.34rem .62rem;border-radius:9px;font-size:.74rem;font-family:var(--serif);font-weight:600;
+  cursor:pointer;line-height:1;opacity:.6;transition:.15s}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent);opacity:1}
+.copy-btn.copied{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);opacity:1}
+.copy-btn .cb-ico{font-size:.9rem}
+@media (max-width:520px){ .copy-btn{top:1rem;right:1.3rem} }
+@media print{ .copy-btn{display:none!important} }
+.search-overlay{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.5);display:none;padding:7vh 1rem 1rem}
+.search-overlay.open{display:block}
+.search-box{max-width:640px;margin:0 auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;box-shadow:var(--shadow);overflow:hidden;max-height:86vh;display:flex;flex-direction:column}
+.search-head{display:flex;gap:.35rem;padding:.55rem .7rem;border-bottom:1px solid var(--line);align-items:center}
+.search-ico{padding-left:.35rem;color:var(--muted);font-size:.95rem}
+#searchInput{flex:1;border:0;background:transparent;color:var(--ink);font-size:1.05rem;
+  font-family:var(--serif);padding:.45rem .3rem;outline:none}
+.search-results{overflow-y:auto;padding:.2rem 0}
+.search-empty{padding:1.5rem;text-align:center;color:var(--muted);font-size:.9rem;line-height:1.6}
+.search-result{display:block;padding:.7rem 1.1rem;text-decoration:none;border-bottom:1px solid var(--line)}
+.search-result:hover{background:var(--bg)}
+.sr-title{font-size:.92rem;font-weight:700;margin-bottom:.28rem;color:var(--ink)}
+.sr-count{font-size:.7rem;color:var(--accent);border:1px solid var(--accent-soft);border-radius:10px;
+  padding:.02em .5em;margin-left:.4em;font-weight:600;white-space:nowrap}
+.sr-snip{font-size:.85rem;color:var(--ink-soft);line-height:1.6;word-break:keep-all}
+.sr-snip mark,mark.shl{background:#ffe08a;color:#1a1a1a;padding:0 .12em;border-radius:2px;font-weight:600}
+.dtools{display:flex;gap:.5rem;padding:.75rem 1.2rem;border-bottom:1px solid var(--line)}
+.dtool{flex:1;display:flex;align-items:center;justify-content:center;gap:.35rem;padding:.6rem .4rem;
+  border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink-soft);font-size:.82rem;
+  font-family:var(--serif);cursor:pointer;text-decoration:none;transition:.15s}
+.dtool:hover{border-color:var(--accent);color:var(--accent)}
+#toTop{position:fixed;right:1.1rem;bottom:1.1rem;z-index:40;opacity:0;visibility:hidden;transition:.2s}
+#toTop.show{opacity:1;visibility:visible}
+.endmark{text-align:center;padding:4rem 1.35rem 6rem;color:var(--muted);font-size:.9rem}
+.endmark .em-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;margin:0 auto 1.5rem}
+@media (max-width:520px){
+  :root{--fs:21px}
+  .chapter{padding:2.9rem 1.3rem .6rem}
+  .book-toc{padding:3.5rem 1.3rem 2rem}
+}
+@media (max-width:430px){ .tb-title{display:none} }
+@media print{
+  @page{margin:16mm 14mm}
+  html,html[data-theme="dark"],html[data-theme="light"]{
+    --bg:#fff;--surface:#fff;--ink:#1a1a1a;--ink-soft:#3a3a3a;--muted:#6a6a6a;
+    --line:#d5d5d5;--accent:#b5451f;--accent-soft:#f2e8e2;--shadow:none;
+  }
+  .topbar,.drawer,.backdrop,#toTop,#progress,.scroll-hint,.search-overlay,.chnav,#resumeBar{display:none!important}
+  body{background:#fff;color:#1a1a1a;font-size:11.5pt}
+  .cover{min-height:auto;background:#fff;page-break-after:always}
+  .cover-img{max-height:96vh}
+  .prologue{page-break-after:always;padding-top:1rem}
+  .prologue figure{page-break-inside:avoid}
+  .prologue figure img{box-shadow:none;border:1px solid var(--line)}
+  .pro-callout{box-shadow:none;page-break-inside:avoid}
+  .book-toc{page-break-after:always}
+  .part{min-height:auto;page-break-before:always;page-break-after:avoid}
+  .chapter{page-break-inside:avoid;content-visibility:visible!important;contain-intrinsic-size:auto!important;padding-top:1.6rem}
+  .chapter figure.dgm{page-break-inside:avoid;box-shadow:none}
+  .chapter h3{page-break-after:avoid}
+  .chapter .csub{page-break-after:avoid}
+  :root{--maxw:100%}
+}
+
+
+/* ── PDF 저장 (PDF_SIZE_PATCH_v2) ───────────────────────── */
+#pdfOverlay{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.5);display:none;
+  align-items:center;justify-content:center;padding:1.2rem}
+#pdfOverlay.open{display:flex}
+#pdfOverlay .pdf-box{width:100%;max-width:390px;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;box-shadow:var(--shadow);padding:1.15rem 1.2rem 1rem;font-family:var(--serif)}
+#pdfOverlay .pdf-h{font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:.9rem;text-align:center}
+#pdfOverlay .pdf-opts{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+#pdfOverlay .pdf-opts button{padding:.72rem .3rem;border:1px solid var(--line);border-radius:9px;
+  background:var(--bg);color:var(--ink-soft);font-family:var(--serif);font-size:.9rem;cursor:pointer}
+#pdfOverlay .pdf-opts button:hover{border-color:var(--accent);color:var(--accent)}
+#pdfOverlay .pdf-opts button.on{border-color:var(--accent);color:var(--accent);font-weight:700}
+#pdfOverlay .pdf-chk{display:flex;align-items:center;gap:.45rem;margin:.9rem .1rem .1rem;
+  font-size:.85rem;color:var(--ink-soft);cursor:pointer}
+#pdfOverlay .pdf-note{font-size:.78rem;color:var(--muted);line-height:1.6;margin:.55rem .1rem .9rem}
+#pdfOverlay .pdf-cancel{width:100%;padding:.55rem;border:0;border-radius:9px;background:transparent;
+  color:var(--muted);font-family:var(--serif);font-size:.85rem;cursor:pointer}
+#pdfOverlay .pdf-prog{display:none;text-align:center;font-size:.85rem;color:var(--ink-soft);padding:.6rem 0 .2rem}
+#pdfOverlay.busy .pdf-opts,#pdfOverlay.busy .pdf-chk,#pdfOverlay.busy .pdf-note,
+#pdfOverlay.busy .pdf-cancel{display:none}
+#pdfOverlay.busy .pdf-prog{display:block}
+@media print{
+  #pdfOverlay{display:none!important}
+  html[data-pdf="l"]   body{font-size:14pt}
+  html[data-pdf="xl"]  body{font-size:17.5pt}
+  html[data-pdf="xxl"] body{font-size:22pt}
+  html[data-pdf="l"] .chapter,html[data-pdf="xl"] .chapter,html[data-pdf="xxl"] .chapter{padding-top:1rem}
+  html[data-pdfbreak="1"] .chapter{page-break-before:always}
+  /* 그림이 빠지거나 회색으로 죽지 않도록 */
+  figure.dgm,figure.dgm img,.prologue figure,.prologue figure img{
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  figure.dgm img,.prologue figure img{max-width:100%;height:auto}
+}
+
+
+/* 엮은이의 말 (@preface) */
+.preface{max-width:var(--maxw);margin:0 auto;padding:4.5rem 1.4rem 4rem;border-bottom:1px solid var(--line)}
+.preface .pf-k{font:400 .72rem "Cormorant Garamond",serif;letter-spacing:.45em;color:var(--muted)}
+.preface h2{font:700 1.65rem/1.4 "Nanum Myeongjo",serif;margin:.5rem 0 2.4rem;color:var(--ink)}
+.preface .pf-part{margin-bottom:2.6rem}
+.preface .pf-n{display:block;font:italic 400 1.15rem "Cormorant Garamond",serif;color:var(--muted);margin-bottom:.6rem}
+.preface p{margin:0 0 1.1rem;line-height:2}
+.preface .pf-q{font-family:"Nanum Myeongjo",serif;font-weight:700;font-size:1.12em;text-align:center;margin:1.8rem 0;color:var(--ink)}
+.preface .pf-sign{text-align:right;font-size:.88em;color:var(--muted);margin-top:2.4rem}
+@font-face{font-family:BookTitle;src:url(img/b408af35544e.ttf) format('truetype');font-display:swap}
+:root{--bg:#f6f2ea;--surface:#fffdf8;--ink:#2b2620;--ink-soft:#5c534a;--muted:#8a7f72;--line:#e6ddcf;--accent:#1f6f8b;--accent-soft:#dcecf1;--maxw:720px}
+html[data-theme="dark"]{--bg:#10151a;--surface:#161d24;--ink:#e8e3d9;--ink-soft:#bdb6a9;--muted:#8f99a5;--line:#2a333d;--accent:#5fb3cf;--accent-soft:#1a2c35}
+.chapter{content-visibility:visible;contain-intrinsic-size:auto}
+.cover.text{background:linear-gradient(180deg,rgba(6,22,32,.35) 0%,rgba(6,22,32,.05) 22%,rgba(6,22,32,.10) 42%,rgba(6,22,32,.70) 68%,rgba(6,22,32,.88) 100%),url(img/a1cc3279c899.jpg) center/cover no-repeat,#0f3b52;color:#fff;min-height:calc(100svh - 54px);justify-content:flex-end;padding-bottom:3.2rem}
+.cover .cover-title,.cover .cover-sub,.cover .cover-kick,.cover-start{text-shadow:0 2px 14px rgba(0,0,0,.45)}
+@media (max-aspect-ratio:3/4){.cover.text{background-position:center,center}}
+.cover .cover-title{font-family:BookTitle,serif;font-weight:400;color:#fff;letter-spacing:.04em}
+.cover .cover-kick{color:#bfe3ef}.cover .cover-sub{color:#e9f3f6}.cover.text .scroll-hint{color:#e9f3f6}
+.cover .cover-rule{background:#bfe3ef}
+.cover-start{display:inline-block;margin:2rem 0;text-decoration:none;border-bottom:1px solid #bfe3ef;color:#fff;font-size:.95rem}
+.cover-note{color:#d6e9ef;font-size:.78rem;letter-spacing:.08em}
+.bt-title,.chapter h3,.pro-title{font-family:BookTitle,serif;font-weight:400}
+.chapter .cnum{letter-spacing:.18em}
+.chapter h3{padding-left:.8rem;border-left:3px solid var(--accent)}
+.chapter .csub{font-size:.95rem;border:0;padding:0;color:var(--ink-soft);margin-bottom:.4rem}
+.chapter .csub::before,.chapter .csub::after{content:none}
+.chapter .ctime{font-size:.8rem;color:var(--muted);letter-spacing:.06em;margin-bottom:2.2rem}
+.chapter h4{font-size:1.08em;font-weight:700;margin:2.6rem 0 1rem}
+.chapter p{line-height:1.95}
+.ph{margin:2rem 0}
+.ph img{display:block;width:100%;height:auto;border-radius:8px;background:var(--line)}
+.ph.two{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.ph.two img{aspect-ratio:3/4;object-fit:cover}
+.ph.two.wide img{aspect-ratio:4/3}
+.ph figcaption{grid-column:1/-1;font-size:.8rem;color:var(--muted);margin-top:.55rem;line-height:1.6}
+.vid{margin:2.2rem 0;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.vid video{display:block;width:100%;aspect-ratio:16/9;background:#000}
+.vid figcaption{padding:.75rem 1rem;font-size:.8rem;color:var(--muted);line-height:1.6}
+.vid figcaption strong{color:var(--accent);display:block;font-size:.86rem;margin-bottom:.15rem}
+.talk{margin:1.6rem 0;padding:.9rem 1.1rem;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 8px 8px 0;font-size:.95em;line-height:1.85}
+.ts{display:inline-block;font-size:.68em;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 .35em;margin-left:.3em;line-height:1.6;vertical-align:.12em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.yt{display:flex;gap:1rem;align-items:center;margin:1rem 0;padding:.7rem;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);text-decoration:none}
+.yt:hover{border-color:var(--accent)}
+.yt-thumb{position:relative;flex:0 0 42%;max-width:240px;aspect-ratio:16/9;overflow:hidden;border-radius:6px;background:#000}
+.yt-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.yt-play{position:absolute;inset:0;margin:auto;width:44px;height:30px;border-radius:8px;background:#e62117;color:#fff;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+.yt-text{display:flex;flex-direction:column;gap:.2rem;font-size:.86rem;line-height:1.5;color:var(--ink-soft);min-width:0}
+.yt-text strong{font-size:1rem;color:var(--ink)}
+.yt-url{font-size:.74rem;color:var(--accent);overflow-wrap:anywhere}
+@media print{.yt-url{color:#111}}
+.interlude{position:relative;margin:2.5rem 0 0;height:72svh;min-height:300px;max-height:760px;overflow:hidden;background:#0b2230}
+.interlude img{display:block;width:100%;height:100%;object-fit:cover}
+.interlude::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,22,32,0) 60%,rgba(6,22,32,.55))}
+.interlude figcaption{position:absolute;left:0;right:0;bottom:1.1rem;z-index:1;text-align:center;color:#e9f3f6;font-size:.78rem;letter-spacing:.08em;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+@media print{.interlude{height:auto;max-height:none}.interlude::after{display:none}}
+.print-poster{display:none}
+.editor-note{font-size:.85rem;color:var(--muted);padding:1.2rem 0;border-top:1px solid var(--line)}
+button:focus-visible,a:focus-visible,video:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+@media(max-width:520px){.chapter{padding:3rem 1.1rem 1rem}.book-toc{padding:3.5rem 1.1rem 2rem}.cover.text{padding:3rem 1.3rem}.cover .cover-title{font-size:2.7rem}.ph.two{gap:.4rem}}
+@media print{.cover-start,.cover-note{display:none}.cover.text{background:#fff!important;min-height:70vh}.cover .cover-title,.cover .cover-sub{color:#111}.vid video{display:none}.print-poster{display:block;width:100%}.vid,.ph{break-inside:avoid}.chapter h4{break-after:avoid}}
+
+.chapter .steps-list{margin:1.4rem 0;padding-left:1.5rem;line-height:1.9}
+.chapter .steps-list li{margin-bottom:.7rem;padding-left:.2rem}
+.chapter .steps-list li::marker{color:var(--accent);font-weight:700}
+
+/* ── 권유 상자 · 잠금 화면 (@cta / @lock) ─────────────
+   프로젝트 자료/book.css 가 있으면 그쪽 값이 쓰인다. */
+.cta,.lock{margin:3.4rem 0 1rem;padding:2.4rem 1.9rem;border-radius:12px;text-align:center;
+  background:#23262a;color:#fff}
+.cta h4,.lock h4{color:#fff;margin:0 0 .9rem;font-size:1.22rem;line-height:1.45}
+.cta p,.lock p{color:rgba(255,255,255,.80);margin:0 auto;max-width:27em;font-size:.95rem;line-height:1.85}
+.cta-btn{display:inline-block;margin-top:1.8rem;padding:.92rem 1.9rem;border-radius:9px;
+  background:#fff;color:#23262a;font-weight:800;font-size:.97rem;text-decoration:none}
+.lock{position:relative;margin-top:0}
+.lock::before{content:"";position:absolute;left:0;right:0;top:-9rem;height:9rem;
+  background:linear-gradient(180deg,rgba(255,255,255,0),var(--surface) 72%);pointer-events:none}
+.lock-ico{display:inline-grid;place-items:center;width:52px;height:52px;margin-bottom:1.2rem;
+  border-radius:50%;background:rgba(255,255,255,.10);color:#dfe4e7}
+/* 테마: journal — 웨딩 저널 무드. project.json "theme": "journal" 이면 book.css 뒤에 붙는다.
+   사진은 자르지 않는다(원본 비율). 배치는 원고의 @gallery 로 정한다. */
+:root{--bg:#f4f1ec;--surface:#fbf9f5;--ink:#2f2c29;--ink-soft:#4a4642;--muted:#8d8780;--line:#ddd5c9;--accent:#8a6f55;--accent-soft:#ebe5db;--pad:1.3rem}
+html[data-theme="dark"]{--bg:#1c1a18;--surface:#24211e;--ink:#ece6dc;--ink-soft:#d2cbc0;--muted:#a0978c;--line:#3a3530;--accent:#c8ad8f;--accent-soft:#2a2622}
+body{background:var(--bg);font-family:"Noto Serif KR",BookTitle,serif;font-weight:300}
+.chapter p{line-height:2;color:var(--ink-soft)}
+.chapter .cnum{font-family:"Cormorant Garamond",serif;font-size:.72rem;letter-spacing:.45em;color:var(--muted)}
+.chapter h3{border:0;padding:0;font-family:"Noto Serif KR",BookTitle,serif;font-weight:300;letter-spacing:.28em}
+.chapter .ctime{font-size:.8rem;color:var(--muted);letter-spacing:.06em;margin-bottom:2rem}
+
+/* 표지 */
+.cover.text{background:linear-gradient(180deg,rgba(30,28,26,.05) 0%,rgba(30,28,26,.12) 40%,rgba(30,28,26,.6) 100%),url(img/a1cc3279c899.jpg) center/cover no-repeat,#3b3631}
+.cover .cover-kick{font-family:"Cormorant Garamond",serif;letter-spacing:.45em;color:#efe8de;font-size:.8rem}
+.cover .cover-title{font-family:"Noto Serif KR",BookTitle,serif;font-weight:300;letter-spacing:.45em}
+.cover .cover-rule{background:#efe8de}.cover .cover-sub{color:#f3eee7}.cover-note{color:#e6ddd1}.cover-start{border-color:#efe8de}
+
+/* 장 첫 화면 */
+.has-opener>.opener{position:relative;margin:-2.9rem calc(-1 * var(--pad)) 1.4rem}
+.has-opener>.opener img{display:block;width:100%;height:auto}
+.has-opener>.opener .ov{position:absolute;left:0;right:0;bottom:0;padding:5rem 1.2rem 1.6rem;text-align:center;color:#fff;background:linear-gradient(transparent,rgba(30,28,26,.5))}
+.opener .sc{font-family:"Pinyon Script",cursive;font-size:clamp(2rem,7vw,2.8rem);line-height:1;margin-bottom:.3rem}
+.opener h3{color:#fff;font-size:clamp(1.3rem,4.6vw,1.7rem);margin:.2rem 0 .5rem;letter-spacing:.5em;padding-left:.5em}
+.opener .dt{font-size:.8rem;letter-spacing:.2em;color:#f1ece4}
+
+/* 소제목: 세 가지를 번갈아 */
+.chapter h4.sh{position:relative;margin:3.2rem 0 1.3rem;font-weight:400;font-size:1.28rem;letter-spacing:.05em;color:var(--ink)}
+.sh .rn{display:block;font-family:"Cormorant Garamond",serif;font-style:italic;font-weight:400;font-size:1.05rem;color:var(--muted)}
+.chapter h4.sh.s0{margin-left:calc(-1 * var(--pad));margin-right:calc(-1 * var(--pad));padding:2.8rem var(--pad) 1.6rem;background-size:cover;background-position:center}
+html[data-theme="dark"] .chapter h4.sh.s0{box-shadow:inset 0 0 0 999px rgba(28,26,24,.8)}
+.sh.s1 .rn{font-style:normal;font-weight:300;font-size:2.8rem;line-height:1;color:var(--line);margin-bottom:-.2rem}
+.chapter h4.sh.s2{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);padding-top:1.1rem}
+.sh.s2 .rn{order:2}
+
+/* 사진 묶음 (@gallery) — 자르지 않음 */
+.g{margin:2.1rem 0}
+.g img{display:block;width:100%;height:auto}
+.g figcaption{font-size:.78rem;color:var(--muted);letter-spacing:.05em;line-height:1.65;margin-top:.55rem}
+.g-pair .gi{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.g-grid .gi{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+.g-strip .gi{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#2b2926;padding:8px 4px}
+.g-strip .fr{position:relative}
+.g-strip b{position:absolute;left:6px;top:2px;font:400 .78rem "Cormorant Garamond",serif;color:#fff}
+.g-contact{background:var(--accent-soft);padding:1rem 1rem .9rem}
+.g-contact .ch{display:flex;justify-content:space-between;font:400 .7rem "Cormorant Garamond",serif;letter-spacing:.3em;color:var(--muted);margin-bottom:.6rem}
+.g-contact .gi{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.g-contact b{display:block;font:400 .7rem "Cormorant Garamond",serif;color:var(--muted);margin-top:2px}
+.g-mosaic .gi{display:grid;grid-template-columns:2fr 1fr;gap:6px}
+.g-mosaic .a{grid-row:span 2;height:100%;object-fit:cover}
+.g-hero{padding:1.4rem 11% .6rem;text-align:center}
+.g-hero figcaption{font-style:italic}
+.g-full,.g-textover{margin-left:calc(-1 * var(--pad));margin-right:calc(-1 * var(--pad))}
+.g-full figcaption{padding:0 var(--pad)}
+.g-textover{position:relative}
+.g-textover .t{position:absolute;left:0;right:0;bottom:0;padding:3rem var(--pad) 1rem;color:#fff;font-size:1.3rem;letter-spacing:.3em;background:linear-gradient(transparent,rgba(0,0,0,.4))}
+.g-split{display:grid;grid-template-columns:1.4fr 1fr;gap:1rem;align-items:end}
+.g-split figcaption{margin:0 0 .3rem}
+.g-stack .a{width:76%}
+.g-stack .b{position:relative;width:56%;margin:-12% 0 0 auto;border:6px solid var(--bg)}
+.g-overlap .gi{position:relative;padding-bottom:9%}
+.g-overlap .a{width:80%}
+.g-overlap .b{position:absolute;right:0;bottom:0;width:44%;border:6px solid var(--bg)}
+.g-cluster{display:grid;grid-template-columns:32% 1fr;gap:.9rem;align-items:start}
+.g-cluster figcaption{margin:0;padding-top:.3rem}
+.g-cluster .gi{position:relative;padding-bottom:98%}
+.g-cluster img{position:absolute;border:5px solid var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.15);box-sizing:border-box}
+.g-cluster .a{right:0;top:0;width:86%}
+.g-cluster .b{left:0;top:46%;width:70%}
+.ph img{border-radius:0}
+
+/* 인용: 사진 위 흰 글씨 */
+.chapter .talk{border-left:1px solid var(--line);background:transparent;border-radius:0}
+.chapter .talk.qbg{margin:2.4rem calc(-1 * var(--pad));padding:3.4rem 1.6rem 3rem;border:0;background-size:cover;background-position:center;color:#fff;text-align:center}
+.qbg p{margin:0;font-size:1.1rem;line-height:1.8;color:#fff;letter-spacing:.03em}
+.qbg .qw{display:block;font-family:"Pinyon Script",cursive;font-size:2.6rem;line-height:1;color:rgba(255,255,255,.8);margin-bottom:-.2rem}
+.qbg .ts{color:rgba(255,255,255,.78);border-color:rgba(255,255,255,.35)}
+
+/* 영상: 사진 액자처럼 */
+.chapter .vid{border:1px solid var(--line);border-radius:0;background:var(--surface);padding:6px}
+.chapter .vid video{aspect-ratio:4/3}
+.chapter .vid figcaption{padding:.6rem .4rem .2rem;font-size:.75rem}
+.chapter .vid figcaption strong{color:var(--ink-soft);font-weight:400;letter-spacing:.04em}
+.chapter .vid figcaption strong::before{content:"FILM";font-family:"Cormorant Garamond",serif;letter-spacing:.35em;color:var(--muted);margin-right:.6rem;font-size:.72rem}
+
+@media(max-width:520px){:root{--pad:1.1rem}.g-hero{padding:1rem 6% .4rem}.g-split{grid-template-columns:1.3fr 1fr;gap:.7rem}}
+@media print{.chapter h4.sh.s0,.chapter .talk.qbg{background:none!important;color:inherit}.qbg p{color:#111}.g-full,.g-textover,.has-opener>.opener{margin-left:0;margin-right:0}}
+
+/* 장 시작 페이지 (@lead): 종이 카드 + 로마숫자·제목·날짜·짧은 글 + 사진이 종이에 스며듦 + 모서리 장식 */
+:root{--paper:#efe7d9;--paper-edge:rgba(110,80,45,.14)}
+html[data-theme="dark"]{--paper:#2a2622;--paper-edge:rgba(0,0,0,.35)}
+.has-cstart>.cstart{position:relative;display:flex;flex-direction:column;margin:-2.9rem calc(-1 * var(--pad)) 1.6rem;padding:3.2rem 1.7rem 2.2rem;overflow:hidden;
+  background-color:var(--paper);background-image:radial-gradient(ellipse at center,transparent 55%,var(--paper-edge) 100%),url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxODAnIGhlaWdodD0nMTgwJz48ZmlsdGVyIGlkPSduJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nLjgnIG51bU9jdGF2ZXM9JzMnIHN0aXRjaFRpbGVzPSdzdGl0Y2gnLz48ZmVDb2xvck1hdHJpeCB2YWx1ZXM9JzAgMCAwIDAgLjQgIDAgMCAwIDAgLjMyICAwIDAgMCAwIC4yMiAgMCAwIDAgLjEzIDAnLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTAwJScgaGVpZ2h0PScxMDAlJyBmaWx0ZXI9J3VybCgjbiknLz48L3N2Zz4=")}
+.cstart .ctext{order:1;position:relative;z-index:2}
+.cstart .cimg{order:2;margin-top:1.8rem;position:relative;z-index:1}
+.cstart .cimg img{display:block;width:100%;height:auto;-webkit-mask-image:radial-gradient(ellipse 78% 78% at center,#000 62%,transparent 100%);mask-image:radial-gradient(ellipse 78% 78% at center,#000 62%,transparent 100%)}
+.cstart .orn{position:absolute;top:-12px;right:-16px;width:46%;max-width:250px;opacity:.6;mix-blend-mode:multiply;pointer-events:none;z-index:1}
+html[data-theme="dark"] .cstart .orn{mix-blend-mode:normal;opacity:.22}
+.cstart .rn{font-family:"Cormorant Garamond",serif;font-size:1.7rem;color:var(--muted);line-height:1}
+.chapter .cstart h3{font-family:"Nanum Myeongjo",BookTitle,serif;font-weight:800;font-size:clamp(2.1rem,8.5vw,2.8rem);letter-spacing:.04em;color:var(--ink);margin:.35rem 0 .6rem;padding:0;border:0;line-height:1.25}
+.cstart .dt{font-family:"Nanum Myeongjo",BookTitle,serif;font-size:.95rem;color:var(--muted);letter-spacing:.06em;padding-bottom:1rem;border-bottom:1px solid var(--line);margin-bottom:1.1rem;max-width:22rem}
+.cstart .ln{font-family:"Nanum Myeongjo",BookTitle,serif;font-size:1.02rem;line-height:2.05;color:var(--ink-soft)}
+.cstart .ln .ts{display:none}
+/* bleed: 사진이 카드 아래 끝까지, 위쪽이 종이에 스며듦 */
+.cs-bleed{padding-bottom:0!important}
+.cs-bleed .cimg{margin:1.6rem -1.7rem 0}
+.cs-bleed .cimg img{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 32%);mask-image:linear-gradient(to bottom,transparent 0,#000 32%)}
+/* side: 사진이 오른쪽에서 스며듦, 글은 왼쪽 */
+.cs-side{min-height:min(96vw,500px)}
+.cs-side .cimg{position:absolute;right:0;top:0;width:84%;margin:0}
+.cs-side .cimg img{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 42%),linear-gradient(to bottom,#000 70%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent 0,#000 42%),linear-gradient(to bottom,#000 70%,transparent 100%);mask-composite:intersect}
+.cs-side .ctext{max-width:64%;margin-top:auto}
+.cs-side .ctext::before{content:"";position:absolute;inset:-1rem -1.4rem -1rem -1.7rem;background:linear-gradient(to right,var(--paper) 70%,transparent);z-index:-1}
+.has-cstart>.ctime{font-size:.8rem;color:var(--muted);letter-spacing:.06em;margin-bottom:2rem}
+@media(min-width:700px){.cs-side{min-height:420px}.cs-side .ctext{max-width:48%}}
+@media print{.has-cstart>.cstart{margin-left:0;margin-right:0}}
+
+.cstart .tail{font-family:"Nanum Myeongjo",BookTitle,serif;font-size:.92rem;line-height:1.9;color:var(--muted);text-align:right;margin-top:1.2rem}
+
+/* 표지(journal): 종이 바탕 위 큰 제목, 사진은 아래에서 종이로 스며듦 (사진은 자르지 않음) */
+.cover.text{justify-content:flex-start;padding-top:12svh;color:var(--ink);
+  background:linear-gradient(to bottom,var(--paper) 0%,var(--paper) 34%,transparent 64%),
+             linear-gradient(to right,var(--paper) 0%,transparent 14%,transparent 86%,var(--paper) 100%),
+             url(img/a1cc3279c899.jpg) center bottom/min(100%,820px) auto no-repeat,var(--paper)}
+.cover .cover-kick{color:var(--muted);text-shadow:none}
+.cover .cover-title{color:var(--ink);font-family:"Nanum Myeongjo",BookTitle,serif;font-weight:800;font-size:clamp(3.4rem,15vw,5.2rem);letter-spacing:.12em;text-shadow:none}
+.cover .cover-rule{background:var(--line)}
+.cover .cover-sub{color:var(--ink-soft);font-family:"Nanum Myeongjo",BookTitle,serif;line-height:2;text-shadow:none}
+.cover-start{color:var(--ink);border-color:var(--ink-soft);text-shadow:none}
+.cover-note,.cover.text .scroll-hint{color:var(--muted)}
+/* 인트로: 사진을 꽉 채우고 위쪽 하늘에 글 */
+.intro-page{position:relative;max-width:var(--maxw);margin:0 auto;background:var(--paper);overflow:hidden}
+.intro-page .it{position:relative;z-index:2;padding:4.2rem 1.7rem 0}
+.intro-page .big{font-family:"Nanum Myeongjo",BookTitle,serif;font-weight:700;font-size:clamp(1.35rem,5.6vw,1.75rem);line-height:1.75;color:var(--ink);margin:0 0 1.4rem}
+.intro-page p{font-family:"Nanum Myeongjo",BookTitle,serif;font-size:1.02rem;line-height:2.05;color:var(--ink-soft);margin:0}
+.intro-page img{display:block;width:100%;height:auto;margin-top:-18%;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 38%);mask-image:linear-gradient(to bottom,transparent 0,#000 38%)}
+.cover.text{align-items:flex-start;text-align:left;padding-left:max(2rem,8vw);padding-right:2rem}
+.cover .cover-rule{margin-left:0}
+.cover .cover-note,.cover.text .scroll-hint{display:none}
+.intro-page .it{padding-bottom:.5rem}
+.intro-page img{margin-top:-6%;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 42%),linear-gradient(to right,transparent 0,#000 7%,#000 93%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 42%),linear-gradient(to right,transparent 0,#000 7%,#000 93%,transparent 100%);mask-composite:intersect}
+.cover .cover-sub{text-align:left;margin-left:0;margin-right:0;max-width:none}
+.intro-page img{width:106%;max-width:none;margin-left:-3%;-webkit-mask-image:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.35) 18%,#000 46%);mask-image:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.35) 18%,#000 46%);-webkit-mask-composite:initial;mask-composite:initial}
+/* 표지 v2: 사진을 배경으로 꽉 채우고 글 쪽만 종이색으로 스며듦 */
+:root{--paper-rgb:239,231,217}
+html[data-theme="dark"]{--paper-rgb:42,38,34}
+.cover.text{justify-content:center;padding-top:0;
+  background:linear-gradient(90deg,rgba(var(--paper-rgb),1) 0%,rgba(var(--paper-rgb),.94) 24%,rgba(var(--paper-rgb),.55) 42%,rgba(var(--paper-rgb),0) 62%),
+             linear-gradient(to top,rgba(var(--paper-rgb),.35),rgba(var(--paper-rgb),0) 30%),
+             url(img/a1cc3279c899.jpg) 62% 38%/cover no-repeat,var(--paper)}
+@media (max-width:700px){
+  .cover.text{justify-content:flex-start;padding-top:13svh;
+    background:linear-gradient(to bottom,rgba(var(--paper-rgb),1) 0%,rgba(var(--paper-rgb),.96) 36%,rgba(var(--paper-rgb),.4) 52%,rgba(var(--paper-rgb),0) 66%),
+               url(img/a1cc3279c899.jpg) 52% 100%/auto 66% no-repeat,var(--paper)}}
+/* 표지 v3 */
+.cover.text{background:linear-gradient(90deg,rgba(var(--paper-rgb),1) 0%,rgba(var(--paper-rgb),1) 30%,rgba(var(--paper-rgb),.7) 40%,rgba(var(--paper-rgb),0) 52%),
+             url(img/a1cc3279c899.jpg) right center/auto 100% no-repeat,var(--paper)}
+@media (max-width:700px){
+  .cover.text{padding-top:7svh;
+    background:linear-gradient(to bottom,rgba(var(--paper-rgb),1) 0%,rgba(var(--paper-rgb),1) 58%,rgba(var(--paper-rgb),.55) 63%,rgba(var(--paper-rgb),0) 72%),
+               url(img/a1cc3279c899.jpg) 50% 100%/auto 44% no-repeat,var(--paper)}
+  .cover .cover-title{font-size:clamp(3rem,14vw,4.4rem);margin:.4rem 0}
+  .cover .cover-sub{line-height:1.8}
+  .cover-start{margin:1.2rem 0}}
+/* 표지 v4: PC도 휴대폰처럼 본문 폭 한 줄로. 사진을 표지 전체 배경으로, 위쪽을 어둡게 해 흰 글씨 */
+.cover.text,@media (max-width:700px){}
+.cover.text{max-width:var(--maxw);margin:0 auto;box-sizing:border-box;justify-content:flex-start;align-items:flex-start;text-align:left;
+  min-height:calc(100svh - 54px);padding:12svh 2rem 3rem;color:#fff;
+  background:linear-gradient(to bottom,rgba(20,12,8,.62) 0%,rgba(20,12,8,.18) 46%,rgba(20,12,8,0) 64%,rgba(20,12,8,.25) 100%),url(img/a1cc3279c899.jpg) 50% 50%/cover no-repeat,#3b2a20}
+@media (max-width:700px){.cover.text{padding-top:10svh;background:linear-gradient(to bottom,rgba(20,12,8,.62) 0%,rgba(20,12,8,.18) 46%,rgba(20,12,8,0) 64%,rgba(20,12,8,.25) 100%),url(img/a1cc3279c899.jpg) 50% 50%/cover no-repeat,#3b2a20}}
+.cover .cover-kick{color:#f3d6b6}
+.cover .cover-title,.cover .cover-sub,.cover-start{color:#fff3e6;border-color:#f3d6b6;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.cover .cover-rule{background:#f3d6b6}
+/* 장 사이 사진도 본문 폭 */
+.interlude{max-width:var(--maxw);margin-left:auto;margin-right:auto}
+.cover.text{background-size:auto,auto 110%!important;background-position:0 0,50% 50%!important}
+
+/* 엮은이의 말 (@preface) */
+.preface{max-width:var(--maxw);margin:0 auto;padding:4.5rem 1.4rem 4rem;border-bottom:1px solid var(--line)}
+.preface .pf-k{font:400 .72rem "Cormorant Garamond",serif;letter-spacing:.45em;color:var(--muted)}
+.preface h2{font:700 1.65rem/1.4 "Nanum Myeongjo",serif;margin:.5rem 0 2.4rem;color:var(--ink)}
+.preface .pf-part{margin-bottom:2.6rem}
+.preface .pf-n{display:block;font:italic 400 1.15rem "Cormorant Garamond",serif;color:var(--muted);margin-bottom:.6rem}
+.preface p{margin:0 0 1.1rem;line-height:2}
+.preface .pf-q{font-family:"Nanum Myeongjo",serif;font-weight:700;font-size:1.12em;text-align:center;margin:1.8rem 0;color:var(--ink)}
+.preface .pf-sign{text-align:right;font-size:.88em;color:var(--muted);margin-top:2.4rem}
+
+/* 스킨: letter — 「종이 편지」. 해량님 1권 시안 C(작업\디자인시안\1권_C_편지.html)를 전자책 전체에 입힘.
+   project.json "theme": "journal", "skin": "letter". 구조(장 첫 화면·사진 묶음·소제목)는 journal 그대로, 모양만 바꿈. */
+:root{--bg:#e6dcc8;--surface:#f3ead8;--paper:#f3ead8;--paper-rgb:243,234,216;--ink:#30291f;--ink-soft:#3a3226;--muted:#8a7d68;--line:#d8cbb2;--accent:#9c5b5b;--accent-soft:#eadfca;--rose:#9c5b5b}
+html[data-theme="dark"]{--bg:#1d1a16;--surface:#26221c;--paper:#26221c;--paper-rgb:38,34,28;--ink:#eee4d2;--ink-soft:#ddd2bf;--muted:#a89a83;--line:#433b30;--accent:#d29a94;--rose:#d29a94}
+body{background:var(--bg);font-family:"Nanum Myeongjo",BookTitle,serif;font-weight:400}
+
+/* 한 장 = 종이 한 장 */
+.chapter,.preface{--pad:76px;background:var(--paper);max-width:720px;margin:40px auto;padding:84px 76px 90px;border:0;
+  box-shadow:0 1px 2px rgba(60,40,20,.12),0 18px 40px rgba(60,40,20,.12);
+  background-image:radial-gradient(ellipse at 20% 0%,rgba(255,255,255,.35),transparent 60%),radial-gradient(ellipse at 100% 100%,rgba(150,120,80,.08),transparent 55%)}
+html[data-theme="dark"] .chapter,html[data-theme="dark"] .preface{box-shadow:0 18px 40px rgba(0,0,0,.4);background-image:none}
+.chapter p,.preface p{font-size:1.06rem;line-height:2.05;color:var(--ink);text-indent:1em}
+.chapter hr.divider{display:none}
+
+/* 여는 글 */
+.preface .pf-k{font:300 12px "IBM Plex Sans KR",sans-serif;letter-spacing:.3em;color:var(--muted);text-align:center}
+.preface h2{font:800 30px/1.4 "Nanum Myeongjo",serif;text-align:center;margin:12px 0 54px;letter-spacing:.02em}
+.preface .pf-n{font-size:0;margin:42px 0 38px;text-align:center}
+.preface .pf-n::before{content:"· · ·";font:400 14px "Nanum Myeongjo",serif;letter-spacing:.6em;color:var(--line)}
+.preface h2+.pf-part .pf-n,.preface .pa+.pf-part .pf-n{display:none}
+.preface .pf-q{font:400 19px/2 "Nanum Myeongjo",serif;color:var(--rose);text-align:center;text-indent:0;margin:26px 0 30px}
+.preface .pf-sign{text-align:right;text-indent:0;margin-top:56px;font-size:1.15rem;color:var(--ink)}
+.preface .pa{text-align:center;margin:-30px 0 40px}.preface .pa-ln{margin:.5rem auto 0}.preface .pa-nt{text-indent:0}
+
+/* 장 첫 화면: 가운데 글 → 사진 */
+.cstart{text-align:center;padding:0!important;background:none!important;min-height:0!important}
+.cstart .ctext{max-width:none!important;margin:0 0 40px!important}
+.cstart .ctext::before{display:none}
+.cstart .rn{font:300 12px "IBM Plex Sans KR",sans-serif;letter-spacing:.3em;color:var(--muted)}
+.chapter .cstart h3{font:800 40px/1.2 "Nanum Myeongjo",serif;margin:14px 0 10px;letter-spacing:.02em}
+.cstart .dt{font:300 13px "IBM Plex Sans KR",sans-serif;color:var(--muted);letter-spacing:.08em;border:0;max-width:none;margin:0 auto;padding:0}
+.cstart .ln{margin-top:34px;font-size:19px;line-height:2;color:var(--ink-soft)}
+.cstart .cimg,.cs-bleed .cimg,.cs-side .cimg{position:static;width:auto;margin:0 -40px 40px!important}
+.cstart .cimg img{-webkit-mask-image:none!important;mask-image:none!important}
+.cstart .orn,.cstart .tail{display:none}
+.has-opener>.opener{margin:0 -40px 40px}
+
+/* 소제목: 가운데 작은 글자 + 양옆 선 */
+.chapter h4.sh{font:700 15px/1.4 "IBM Plex Sans KR",sans-serif;letter-spacing:.24em;color:var(--muted);text-align:center;margin:62px 0 30px;padding:0;border:0;background:none!important;display:block}
+.chapter h4.sh::before,.chapter h4.sh::after{content:"";display:inline-block;width:36px;height:1px;background:var(--line);vertical-align:middle;margin:0 14px}
+.chapter h4.sh.s0{margin-left:0;margin-right:0;color:var(--muted)}
+.sh .rn{display:none}
+
+/* 글에서 옮긴 말: 장미색 */
+.chapter .talk,.chapter .talk.qbg{margin:24px 0 30px;padding:0 0 0 1em;border:0;background:none!important;color:var(--rose);text-align:left}
+.chapter .talk p,.chapter .talk.qbg p{color:var(--rose);font-size:18px;line-height:2;text-indent:0}
+.ts{font:300 11.5px "IBM Plex Sans KR",sans-serif;color:var(--muted);letter-spacing:.02em}
+
+/* 사진: 흰 테두리 인화지 */
+.g{margin:36px auto}
+.g img{padding:6px;background:#fbf7ee;border:1px solid #e3d8c2}
+html[data-theme="dark"] .g img{background:#332d25;border-color:#433b30}
+.g figcaption,.chapter .vid figcaption{font:300 12px "IBM Plex Sans KR",sans-serif;color:var(--muted);text-align:center;letter-spacing:.06em;margin-top:10px}
+.g-full,.g-textover{margin-left:-40px;margin-right:-40px}
+.g-full img,.g-textover img{padding:0;border:0}
+.g-strip .gi{background:none;padding:0;gap:10px}
+.g-hero{padding:0 12%}
+
+/* 차례·장 이동 */
+.chnav{border-top:1px solid var(--line);padding-top:24px}
+
+@media (max-width:640px){
+  body{background:var(--paper)}
+  .chapter,.preface{--pad:24px;margin:0;padding:56px 24px 64px;box-shadow:none}
+  .chapter+.chapter,.preface+*{border-top:1px solid var(--line)}
+  .chapter p,.preface p{font-size:1rem}
+  .preface h2{margin-bottom:40px}
+  .chapter .cstart h3{font-size:34px}
+  .cstart .cimg,.cs-bleed .cimg,.cs-side .cimg,.g-full,.g-textover,.has-opener>.opener{margin-left:-24px!important;margin-right:-24px!important}
+  .g-hero{padding:0 4%}
+}
+
+.chapter.ghost>*:not(.cta):not(.chnav){filter:blur(5px);opacity:.75;user-select:none;pointer-events:none}.chapter.ghost .chnav{display:none}.blank{margin:2.2rem 0;background:repeating-linear-gradient(135deg,rgba(120,110,95,.10) 0 2px,transparent 2px 9px),rgba(120,110,95,.08)}.blank.ph{aspect-ratio:4/3}.blank.vid{aspect-ratio:16/9;background-color:rgba(40,36,30,.22)}.chapter .lock,.chapter .cta{margin:3rem 0 1rem;padding:2.6rem 1.6rem;text-align:center;border-radius:0;background:var(--paper,var(--surface,#faf8f3));color:var(--ink,#2b2a27);border-top:1px solid var(--line,#d9d2c4);border-bottom:1px solid var(--line,#d9d2c4)}.chapter .lock::before{display:none}.chapter .lock h4,.chapter .cta h4{color:var(--ink,#2b2a27);font-size:1.15rem;margin:0 0 .7rem;background:none}.chapter .lock p,.chapter .cta p{color:var(--muted,#8b877e);font-size:.93rem;line-height:1.8;margin:0 auto;max-width:26em;text-indent:0}.lock-ico{display:inline-grid;place-items:center;width:46px;height:46px;margin-bottom:1rem;border-radius:50%;border:1px solid var(--line,#d9d2c4);color:var(--muted,#8b877e);background:none}.chapter .cta-btn{display:inline-block;margin-top:1.4rem;padding:.8rem 1.8rem;background:#8a8c76;color:#fff;font-weight:600;font-size:.92rem;text-decoration:none;border-radius:999px}.toc a.locked,.bt-part li.locked>a{opacity:.55}.modebtn{width:auto;padding:0 .7rem;font-size:.78rem;text-decoration:none;white-space:nowrap}</style></head><body>
+<div id="progress"></div><header class="topbar"><button class="iconbtn" id="menuBtn" aria-label="목차">☰</button><span class="tb-title">좋은세상</span><span class="spacer"></span><a class="iconbtn modebtn" href="flip/">책으로 보기</a><button class="iconbtn" id="searchBtn" aria-label="본문 검색">⌕</button><button class="iconbtn sm" id="fsDown" aria-label="글자 작게">A−</button><button class="iconbtn sm" id="fsUp" aria-label="글자 크게">A+</button><button class="iconbtn" id="themeBtn" aria-label="화면 테마 변경">☾</button></header>
+<div class="backdrop" id="backdrop"></div><nav class="drawer" id="drawer" aria-label="전자책 목차"><div class="dhead"><b>차례</b><button class="iconbtn sm" id="closeBtn" aria-label="목차 닫기">✕</button></div><div class="dtools"><button class="dtool" id="dlPdf">인쇄 / PDF</button><a class="dtool" id="dlHtml" href="#" download="해량_어머니_좋은세상_전자책.html">파일 저장</a></div><div class="toc"><div class="part-t">2013 – 2024</div><a href="#toc"><span class="n">―</span><span>전체 차례</span></a><a class="" href="#ch-0"><span class="n">00</span><span>태안, 첫 나들이</span></a><a class="locked" href="#ch-1"><span class="n">01</span><span>동해</span></a><a class="locked" href="#ch-2"><span class="n">02</span><span>서산</span></a><a class="locked" href="#ch-3"><span class="n">03</span><span>부산</span></a><a class="locked" href="#ch-4"><span class="n">04</span><span>장태산</span></a><a class="locked" href="#ch-5"><span class="n">05</span><span>봄나들이</span></a><a class="locked" href="#ch-6"><span class="n">06</span><span>경주, 포항</span></a><a class="locked" href="#ch-7"><span class="n">07</span><span>안면도</span></a><a class="locked" href="#ch-8"><span class="n">08</span><span>서산, 제천</span></a></div></nav>
+<div class="search-overlay" id="searchOverlay"><div class="search-box"><div class="search-head"><span class="search-ico">⌕</span><input id="searchInput" type="search" aria-label="본문 검색어" placeholder="단어·대화 검색…" autocomplete="off"><button class="iconbtn sm" id="searchCloseBtn" aria-label="검색 닫기">✕</button></div><div class="search-results" id="searchResults"></div></div></div>
+<main><section class="cover text"><div class="cover-kick">GOOD WORLD · 2013 – 2024</div><h1 class="cover-title">좋은세상</h1><div class="cover-rule"></div><div class="cover-sub">2013 – 2024<br><br>수술 뒤에 만난<br>일곱 사람의 열한 해</div><a class="cover-start" href="#toc">차례부터 읽기 ↓</a><div class="cover-note">좋은세상 밴드의 글과 사진으로 엮었습니다</div><div class="scroll-hint">아래로 스크롤 ↓</div></section>
+<section class="intro-page"><div class="it"><p class="big">2013년 7월 29일,<br>선영은 수술을 받았다.</p><p>그리고 석 달 뒤,<br>같은 병을 지나온 언니 동생들과<br>「좋은세상」을 시작했다.</p></div><img src="img/200b8111c693.jpg" width="1280" height="960" alt=""></section><section class="prologue" id="intro"><div class="pro-kick">HOW TO READ</div><h2 class="pro-title">이 책에 대하여</h2><p>2013년 가을부터 2024년 봄까지. 수술을 받고 석 달 뒤에 시작한 작은 모임 하나가 열한 해 동안 어떻게 이어졌는지를, 선영이 밴드에 남긴 글과 사진으로 따라간다.</p><p class="editor-note">따옴표 안의 말은 선영이 「좋은세상」 밴드에 직접 쓴 글이며, 맞춤법과 말투를 그대로 두었다. 옆의 작은 꼬리표<span class="ts">글 2016.7.29</span>는 그 글이 올라온 날이다. 영상 속 말에는 영상 이름과 위치를 달았다. 연락처·계좌·회비 내역 같은 개인 정보와, 인터넷에서 옮겨 온 글은 싣지 않았다.</p></section>
+<section class="book-toc" id="toc"><div class="bt-kick">CONTENTS</div><h2 class="bt-title">차례</h2><div class="bt-part"><div class="bt-pnum">첫 모임 → 함께 떠난 길 → 이별 → 다시 모이다</div><div class="bt-ptitle">열한 해</div><ol><li class=""><a href="#ch-0"><span class="n">00</span><span>태안, 첫 나들이</span></a></li><li class="locked"><a href="#ch-1"><span class="n">01</span><span>동해</span></a></li><li class="locked"><a href="#ch-2"><span class="n">02</span><span>서산</span></a></li><li class="locked"><a href="#ch-3"><span class="n">03</span><span>부산</span></a></li><li class="locked"><a href="#ch-4"><span class="n">04</span><span>장태산</span></a></li><li class="locked"><a href="#ch-5"><span class="n">05</span><span>봄나들이</span></a></li><li class="locked"><a href="#ch-6"><span class="n">06</span><span>경주, 포항</span></a></li><li class="locked"><a href="#ch-7"><span class="n">07</span><span>안면도</span></a></li><li class="locked"><a href="#ch-8"><span class="n">08</span><span>서산, 제천</span></a></li></ol></div></section>
+<article class="chapter has-cstart" id="ch-0"><section class="cstart cs-bottom"><div class="cimg"><img src="img/5919073e5d0e.jpg" width="960" height="720" alt=""></div><div class="ctext"><div class="rn">I.</div><h3>태안, 첫 나들이</h3><div class="dt">2013 · 수술, 그리고 좋은세상</div><div class="ln">수술을 받고 석 달 뒤,<br>선영은 언니 동생들과<br>작은 밴드 하나를 열었다.</div></div></section><div class="ctime"></div><h4 class="sh s0" id="s0-0"><span class="rn">i.</span>함께라 조아요</h4><p>2013년 7월 29일, 선영은 유방암 수술을 받았다. 그해 10월 11일 아침, 「좋은세상」이라는 이름의 밴드에 첫 사진들이 올라왔다. 다 같이 영화를 보러 간 날 남긴 사진 한 장, 다음에는 예쁜 옷을 입고 단체 사진을 찍자는 다짐, 그리고 짧은 한마디였다. &quot;어디서든    함께라 조아요~~~^^&quot;<span class="ts">글 2013.10.11</span></p><p>같은 날 선영은 언니 한 사람의 사진을 허락도 받지 않고 올렸다. 보고 싶을 때마다 보려고 그런다고 했다. &quot;지금도 보고시퍼요ㅠㅜ&quot;<span class="ts">글 2013.10.11</span> 밴드는 그렇게, 서로를 보고 싶어 하는 마음에서 시작되었다.</p><h4 class="sh s1" id="s0-1"><span class="rn">ii</span>태안, 첫 나들이</h4><p>열흘 뒤 선영은 첫 나들이를 공지했다. 11월 1일 금요일부터 2일 토요일까지였다. 참석하는 회원은 7만 원, 못 오는 회원도 3만 원을 내기로 했다. &quot;함께  즐건 추억  만들수있게  바쁜시간 쪼개서 봐유~~&quot;<span class="ts">글 2013.10.23</span></p><p>첫 모임은 태안의 한 펜션에서 열렸다. 돌아온 다음 날 선영은 이렇게 적었다. &quot;함께 할수있어서 행복했던 추억들~♥&quot;<span class="ts">글 2013.11.2</span> 그리고 그날 오지 못한 네 사람의 이름을 하나하나 불렀다. 다음에는 꼭 함께하자고.</p><figure class="g g-hero"><img loading="lazy" src="img/3d37630506f2.jpg" width="953" height="1280" alt=""><figcaption>펜션과 밥상</figcaption></figure><h4 class="sh s2" id="s0-2"><span class="rn">iii.</span>서산댁</h4><p>선영은 서산에 살았다. 스스로를 &#x27;서산댁&#x27;이라 불렀다. 11월 내내 그녀의 글에는 산이 있었다. 서산 부춘산의 소나무 숲에서 피톤치드의 정기를 받는다고 했고, 지리산에는 &#x27;힐링&#x27;을 하러 왔다고 했다. 서산에 첫눈이 내린 날에는 눈 덮인 부춘산 사진을 올렸고, 며칠 뒤에는 산에 올라 꼬마 눈사람을 만들었다.</p><figure class="g g-full"><img loading="lazy" src="img/7d21bb61dcf8.jpg" width="1280" height="960" alt=""><figcaption>소나무 숲길</figcaption></figure><figure class="g g-pair"><div class="gi"><img loading="lazy" src="img/82d48bae064b.jpg" width="960" height="720" alt=""><img loading="lazy" src="img/4be1b7a50739.jpg" width="1280" height="960" alt=""></div><figcaption>햇살과 바다 · 늦가을 물가</figcaption></figure><figure class="g g-split"><img loading="lazy" src="img/6100bc9d709f.jpg" width="720" height="960" alt=""><figcaption>매달린 감</figcaption></figure><figure class="g g-pair"><div class="gi"><img loading="lazy" src="img/8ffc4ab33e7a.jpg" width="960" height="1280" alt=""><img loading="lazy" src="img/20d87399871e.jpg" width="960" height="1280" alt=""></div><figcaption>첫눈 내린 길 · 꼬마 눈사람</figcaption></figure><section class="lock"><span class="lock-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg></span><h4>여기부터는 잠겨 있습니다</h4><p>실제 책에는 이 뒤로 8개의 장이 더 이어집니다. 사진 139장과 영상 8개가 함께 담겨 있습니다.</p><a class="cta-btn" href="https://autobiography001.cafe24.com/#ask" target="_blank" rel="noopener">무료 제작 상담 신청</a></section><nav class="chnav" aria-label="장 이동"><a href="#toc"><span class="dir">차례</span><span class="t">처음으로</span></a><a class="next" href="#ch-1"><span class="dir">다음 →</span><span class="t">동해</span></a></nav><hr class="divider"></article><article class="chapter has-cstart ghost" id="ch-1"><section class="cstart cs-side"><div class="ctext"><div class="rn">II.</div><h3>동해</h3><div class="dt">2014 · 묵호 · 추암 · 정동진</div><div class="ln">천안에서, 동해에서, 부천에서.<br>일곱 사람은<br>틈만 나면 만났다.</div></div></section><div class="ctime"></div><h4 class="sh s0" id="s1-0"><span class="rn">i.</span>서사너도퍼 도 키타 퍼처</h4><p>차소저 초루 토커머 푸고 추코 지수두 마구부리. 두고부 나고 도소이 파 미두 나쿠리시구 퍼코모 피루 아추이 라초 타자카. 호러 조차 지쿠러, 우사하키 더사거 서허코. 기머자티터 티부조퍼 거너 버포우 로타소 카비자, 소노초조 치미터 고마히어 오보 모파누. 모 기터너 도터모가 &quot;투노카차 히리 버마바 다자&quot;미 히모나.{디 호노부노.바.주보}</p><p>피라 두주이 두히미파허 쿠머초. 가조차키디 너미어 터지히퍼사 디초서피. 포니리가라 부커니 저미 소로누저 보후 기우 기코허 나피 커파, 주두투 노 처주러 &quot;퍼하거소&quot;카자너 오처누. 마자 후부푸 파초카 &quot;라도거부&quot; 커키러 시키 저마커쿠 머라초미 하피버.{비 처카투하.머.카모}</p><div class="blank ph"></div><div class="blank ph"></div><h4 class="sh s1" id="s1-1"><span class="rn">ii</span>마피, 니 이아 더더</h4><p>부미 구리서 키퍼루, 초치라소머 키 우후 하수 버두우 나누나. 이너 디허구 어카 처저머호치기서 키어 히시아두 디추보 포푸주추지. 루허 호 소러어 지후저 어피자리. 쿠무러투 바거 키초 차자버기 디시 너비퍼 로라아허. &quot;우사부하코초&quot;{주 사커투커.너.더토}</p><p>카주시 주보마로. 서투우조다나 소카 허소 호투티토, 치카처 디푸서보거처 서지 조디너시 가후루. 후하바허니 러주노, 라오지 후 기더수 노디소두 루사이 처추 히터오허 러마 라피. 더소누 피 차키조 치카치 지누로지. &quot;라고초너러 라무서처  누키더기조 아지가노  조코구 러치투무  소아모수고치&quot;{처 피파자서.누.저} 타처비디티사 루너자나피시 저로두포도 고부부.</p><div class="blank vid"></div><p>치노지 고토 카차키 타타고 토아어티 키누아이소 누 포 처포호고 토러리우. 비 사소 수마 추처 지 허디마 바로. &quot;키구 후다 바누타  푸 파포자~~~&quot;{키 고구피타.호.디머}</p><div class="blank ph"></div><h4 class="sh s2" id="s1-2"><span class="rn">iii.</span>치루라푸 디</h4><p>거라 티, 우너마 저너리무투키수 퍼 수사 거처코 가도 쿠 라기쿠 버후무. 토두 오너호 코 미쿠퍼초퍼 키오 수나 사더 어저로 시가키 리쿠. 서투누터파 무수더 리사 다투러 기퍼구 리저서 기부 더푸 이 키터차, 이고피도 리호 이아거추 니커. 자누구 푸미시 &quot;니티조  도기처커더 자투키  리허부 토서&quot;누카코 거타오퍼.{퍼 아디루커.라.피머}</p><p>치부티 서 키차코 주미모리 사허이. 사차퍼 저차 포누보 도부로 이마 사로키 미로 키커로. &quot;사버너타  파마오머추......&quot;{디 다너커티.버.치디}</p><div class="blank ph"></div><h4 class="sh s0" id="s1-3"><span class="rn">iv.</span>파버</h4><p>타퍼 터보, 차미거라 아거초라거 누노고 쿠나타. 머후포 &#x27;티오&#x27;저푸로. 치부피 버서토거 도보 피, 로버로하터 포퍼 디두 니도기 루수 버호거푸 무루파 고치이도 리기. 바 하시두러 다모로이 토지카 &quot;서소소구리지  나머기사  어다어&quot;모우 디코.{나 시수마디.타.오리}</p><p>리포 버티, 쿠아후 더하 나히사 니키추 푸구토 퍼시. 사파주 바모 루 자디저포. &quot;조노가어 / 비이로처 / 투디구나버아  쿠초추어~~&quot;{지 구더마차.수.너루} 퍼너 디 추기마저 히머 조다 투, 고리지 &quot;소두 히추다노  키조너 기터키바&quot;모비 티자초.{수 부노우이.호.포초}</p><div class="blank ph"></div><div class="blank ph"></div><h4 class="sh s1" id="s1-4"><span class="rn">v</span>처차라 조하구러</h4><p>커라보푸 초커수거 마도구. 호노이 모쿠 터마미 소치모 모 이추 쿠카자. &quot;오커 가로소 코노사지퍼 파니디 커기미 토머티♡&quot;{사 저저루니.추.너두}</p><p>초커초디시 두니서자아 &#x27;커사&#x27;키 조우나. 카구히 고 누오 우치피기하 모허하 니로너가, &quot;기포푸부추 퍼서버  구사이코&quot;바바더 무바파.{푸 수피부초.도거.지} 가리후치 터조 아부다 쿠주하 키나도. 투누 허쿠코로쿠 비바시 후타 피소호 라 미어키버라노 후후.</p><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><p>허버나터우거 카나히 마, 차서초 우 소 너히 라러사 주 차로타 우미 투더지티커 터조. 니피무 나허푸 파주구 러마 나거노. &quot;우리호 노 사사추 보피피버  노버 터 포러~~♡♡&quot;{초 푸라루사.키하.키소}</p><nav class="chnav" aria-label="장 이동"><a href="#ch-0"><span class="dir">← 이전</span><span class="t">태안, 첫 나들이</span></a><a class="next" href="#ch-2"><span class="dir">다음 →</span><span class="t">서산</span></a></nav><hr class="divider"></article><article class="chapter has-cstart ghost" id="ch-2"><section class="cstart cs-bottom"><div class="ctext"><div class="rn">III.</div><h3>서산</h3><div class="dt">2015 · 칠공주, 엄마의 마음으로</div><div class="ln">보고 또 봐도 보고 싶은<br>언니들, 동생들.<br>일곱 사람은 스스로를 칠공주라 불렀다.</div></div></section><div class="ctime"></div><h4 class="sh s0" id="s2-0"><span class="rn">i.</span>바비히 푸조지거</h4><p>나푸, 치다사 초하 리타자퍼거 디초저 저처수 차하. 히비수가 저가오 라머니머 두루키 타모더오 포다초 미더코저, 거구두처 하고 이부수 누서.{더 더푸너리.푸.비디} 투터바 마지구 라호 주노가. 비처나커어버어 토자나오너수저더타소. 저차라 로추나 &quot;후부아디 / 이차머어키추허&quot;푸버 나자, 카더기 두 타포 라푸처 마버푸 차머 시누고.{버 어라아자.저.카거}</p><p>터피 파모아어호 티라타어허 터다파 누거, 커치마소카 도허 미도로. 바머루서 로 쿠키 두 호지처 디토서 러도. &quot;투두 수 투미  차자바오  퍼어티 ♡저두미 / 이어타거  푸마오미니  부미마푸~~~ / 모비 / 티투누비&quot;{노 저커고투.비.치리}</p><div class="blank ph"></div><h4 class="sh s1" id="s2-1"><span class="rn">ii</span>파코 시모처 로보키</h4><p>커구라바 주서 파수추 지고서버 부치이 우호미 티타. 추처우 비기노주 파오 머노구 보하 터누, 디토모 시조투우 지자 히터저 기퍼 코머 주처수모. &quot;디로자라  커바마 토타모 코비조거퍼,,,&quot;{투 커카두토.가.터이}</p><p>티저, 거버커 커나 조키 무사 차파 어모바 부보. &quot;너이  니허처  피러버  푸루두 바커코미~~^^&quot;{바 기카모노.무.보라}</p><p>가후 포, 하초히 디터소시이 누초가루 피호 사투소 쿠부 나루자 더차우. 더카타 소가사 서고 도노바 조부피 파터누 차버. &quot;미라파 우저누보   토히피보시 이수포^^&quot;{이 이다치너.리.히고}</p><div class="blank vid"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><h4 class="sh s2" id="s2-2"><span class="rn">iii.</span>러니, 타코티 치타오너</h4><p>키카라부 자주사 처조 치러차사 기로모 가이거. 추거우 소치처치 미카무머, 퍼추처호 니루거 포차. 히다쿠 디더가 리누키, 마더수 나수버주피 가거타보 자기코모 가머시처지 모조수 부서히, 디초지조처 니루루투 퍼지 바바더허.{치 키토차투.라.디부} 코두자 사초 초추부 하 히 두더토 토비키. 어타 후시카, 주투보, 나노미 로디누 키거, 아치치 지초러. 디투거 거티 소초 퍼카 가로다. 다노어노 저거조니추 부초추푸, 비거미, 소두 키버, 디보, 구초차 주너디바 너차오.{사 차소피조.너.사디}</p><p>지퍼 무더 나오아 포마, 주미, 가머, 거처, 파니수시니. 바도소 다무무 저라 타투 비키우. 지피 추비처 모아허나노치 하가 파 주머 사누키. &quot;카투호로 무 모피타커어너 모거호자마터 부소어토♡&quot;{비 후어다도.아.저자}</p><p>코키 차기나 오, 니초구 터마 히디 사피마 티바조 보사 노투 마 디가 투호부.</p><p class="talk">&quot;우바소 허더허아  허 버추 저코타 로키나 ~~라도주로 자미 투조~ / 무자다고 무보터루퍼 비처,,,&quot; {무 치터다코.푸.우코}</p><p>두기 피, 고지피 로푸 초두추 더다호. &quot;푸머지차   고키구바사~~ / 두키치추 모푸사 퍼허바^^&quot;{추 노시부부.노.키} 구쿠초 차머 초후이 로이다 누너리디 조더 우타코저토 후머.</p><div class="blank ph"></div><h4 class="sh s0" id="s2-3"><span class="rn">iv.</span>소니 러미더 두조</h4><p>가나저니투 사타터타두 초이 허모자비. 누라코 도버코쿠 조시 보우사 호호바 카 카수 시라라 후하, 구너 저 코리 티 루코포 피우더바.{히 추비나도.키도.하}</p><p>차리코 후디리부다 호지치니 보 서두 토포히 포나더 거쿠퍼. 추처히치처 버마, 어추수 우치수 누투이미하, 키로후퍼 히 코 하더러 키미퍼 키투.{가 어바어수.지가.호하}</p><div class="blank ph"></div><div class="blank ph"></div><nav class="chnav" aria-label="장 이동"><a href="#ch-1"><span class="dir">← 이전</span><span class="t">동해</span></a><a class="next" href="#ch-3"><span class="dir">다음 →</span><span class="t">부산</span></a></nav><hr class="divider"></article><article class="chapter has-cstart ghost" id="ch-3"><section class="cstart cs-bleed"><div class="ctext"><div class="rn">IV.</div><h3>부산</h3><div class="dt">2016. 1 – 7 · 곁에는 없지만</div><div class="ln">한 사람을 떠나보낸 겨울,<br>남은 여섯은<br>다시 길을 나섰다.</div></div></section><div class="ctime"></div><h4 class="sh s0" id="s3-0"><span class="rn">i.</span>사나 마도</h4><p>차시도파수 카디 가키, 기조오머투 조보모 마퍼쿠. 호키자 자러니 누도자 호카라 거파무 차 로다 소부 고이포.</p><p class="talk">&quot;치수 도지 가피토코지 하소니투나 비지니디커  자 푸로미어타 / 하루 치미버너차무머 초오아파 투모우가 / 저버더바 차부&quot; {니 니루티포.자.차}</p><p>푸러 지, 기리바 코보토초사 추커 너 너이저 커리초 허키후 처가미. &quot;티처비쿠푸 포퍼터머  파호너포쿠 타다니니 커더모비시&quot;{니 소고루니.이.가저}</p><h4 class="sh s1" id="s3-1"><span class="rn">ii</span>자너</h4><p>피아 더차, 자어누 토저 소토 나포보타 어터다. 보소퍼파 히다조, 마바버키사. 조디 주우 버조, 커디후수 푸가 후우로, 추카가 푸버니 치터 더러 아모커가 라서.{사 우초비하.아.사}</p><p>루 커라 초투티허 모니, 투보, 쿠퍼, 고퍼 로마 도노로 포라허 보루서조. 나거 비초치 사조노. 저디두 무호소퍼서 부기 터우 오저 코처 고터미 자티오, 추푸어디 무주처다누모 니소수두피주 무너어 무주머투 우이주 우호부. 히우자 아터 초 미퍼리자처 커거무조카 커어푸 비러 더노.</p><div class="blank ph"></div><div class="blank ph"></div><p>모주 차마 로다 허 아코 보나 라추거 너도쿠모 오부우. 히커허파사티 사아소타, 서후호리 어바, 우나니소, 나후처 오허더, 차너코 추서하. 호카누 이쿠파커구 차서커루이수 저 루 피저 머두. 오구 보후 포차 리 보우 로너 호차가,거누누더사나라, 호부 치지부 로무지부 루코 커쿠 수터치. &quot;러러후코어 토거부~~로티디보도비니코어 서리라로처 타우누카&quot;{시 쿠니부누.너.보러}</p><p>나러루 코 부소치 도소디 로퍼이토. 도서 구 고커가 구포시 허 라히 저 커다조. &quot;우포 두퍼투키티   지수사소 피수 처초차&quot;{거 무히기다.고.머구}</p><h4 class="sh s2" id="s3-2"><span class="rn">iii.</span>바미루 노타</h4><p>시버 러, 로우라 코아커 고머터 포니호 자비 푸키버 이나로. &quot;퍼서무투 코부포누  사소거무~&quot;{루 키토추푸.도.초}</p><div class="blank ph"></div><p>무투 코허어 푸처이 &quot;지너조 타오&quot;키포 저쿠가. 거버우 호버무디 수모초히 초로마포 터무고 푸이 주자 자차디라러 버노나. &quot;키도키카 이기호디  로바 / 니투디~~&quot;{리 누후버투.보.바투} 비초 구 구구다 버자구 토 로치키조 니사. &quot;모초구저 피두부 포수호 ~&quot;{처 추두아러.노.비기}</p><div class="blank ph"></div><h4 class="sh s0" id="s3-3"><span class="rn">iv.</span>조쿠 무자치</h4><p>루포비버너 후도 기모머, 카구무 사리 도나어 타투 자니루루.</p><p class="talk">&quot;러보두너머아부피버고 / 머시구 키처기주퍼도커~~ / 버지도라노주파 처구라코토&quot; {지 루터카티.카.타비}</p><p>하초 커사피, 버리 루퍼더너 리나 서비 토더커 비푸 카처도 너조. 투코푸 부 티우마 무히아 미나모.</p><p class="talk">&quot;서니자  호차도포거푸 / 주초마 푸저더너파 푸도&quot; {코 머버토치.투.니추}</p><p>카커 코피자무 가 커초초파 나니터 타거 도 머구타 버보서 나포이 카기타코 마로호호 기어 부 거터 추 바가파 후고. 바누 퍼바다 니호피 히 리도어 투고로 오이코. 키버사치처 서주머후, 아무포구, 포시자비, 우가, 저추, 수서 누리. 이노포 &quot;코디키 고자가 파 커허다카 초라구노 / 포라러  무코차   저로푸처초  처리피너포자&quot;.{포 루자저커.마.우조}</p><div class="blank ph"></div><nav class="chnav" aria-label="장 이동"><a href="#ch-2"><span class="dir">← 이전</span><span class="t">서산</span></a><a class="next" href="#ch-4"><span class="dir">다음 →</span><span class="t">장태산</span></a></nav><hr class="divider"></article><article class="chapter has-cstart ghost" id="ch-4"><section class="cstart cs-side"><div class="ctext"><div class="rn">V.</div><h3>장태산</h3><div class="dt">2016. 9 – 12 · 자연휴양림</div><div class="ln">힐링하기 좋은 곳이라며<br>나중에 여섯이 꼭 한 번<br>다시 오자고 약속했다.</div></div></section><div class="ctime"></div><h4 class="sh s0" id="s4-0"><span class="rn">i.</span>노서 티카키</h4><p>티보사오 푸바 가거바 고후디고하주구 더버 디이주피 서조. 쿠추치 카서, 머차너루무 호아소너 커나서. 버가차마 추주코러아 디저푸 구루, 치허어루 부타 시카자 누아바 후나아. 서카이 호거티 &quot;터저도노 버 이커처&quot;보오오 어코고 차바 허추오. &quot;다시더 디호 라소 서티소  주허자이카파~~~  마머^^&quot;{로 코우니모.무.무치}</p><div class="blank vid"></div><div class="blank ph"></div><div class="blank ph"></div><h4 class="sh s1" id="s4-1"><span class="rn">ii</span>버파루 서초니</h4><p>나토비, 초수 추디주 퍼로사라 주리 무부나 투파버쿠. 소푸더 로우 푸니자 저서버차 다 퍼다 두 커허아 치더버치 비자.{이 터모구무.차저.사아} 비처키 수, 키더모 루우차키 시하미 차다코아 가니 누포나어아 너나다 무비 터토너. 수치누우키 디허피 &quot;조 두자토사&quot; 쿠어무이.{초 가초우쿠.키오.추}</p><div class="blank ph"></div><div class="blank ph"></div><p>타거투리카머 무사조 커 노다처 투푸 우가노. &quot;수너호추수 커모~~~ / 코이티투푸오 / 퍼아소기 머무포이 보나 조디 호디 조니구가♡&quot;{히 퍼거보퍼.퍼퍼.나보}</p><nav class="chnav" aria-label="장 이동"><a href="#ch-3"><span class="dir">← 이전</span><span class="t">부산</span></a><a class="next" href="#ch-5"><span class="dir">다음 →</span><span class="t">봄나들이</span></a></nav><hr class="divider"></article><article class="chapter has-cstart ghost" id="ch-5"><section class="cstart cs-bottom"><div class="ctext"><div class="rn">VI.</div><h3>봄나들이</h3><div class="dt">2017 – 2018 · 당일치기가 1박 2일로</div><div class="ln">언제나 함께여서<br>행복하고 즐거워.</div></div></section><div class="ctime"></div><h4 class="sh s0" id="s5-0"><span class="rn">i.</span>어나아시초 노푸 아부구</h4><p>거터우기시 리치, 치거토비사 히커나주버 구지커. 디자 사 고고추 조사추사고추바 허 미우푸 하조 보아디. 푸허소코노 이수로 보버도마오 바 주코다 타 미이리 포구. 초퍼누 기포비더구 다부피티 피우오거 도추 추추누 차마디. &quot;투코조 처너코코 자모히우 처토거♡ / 우시피더하 무머조리터~~~&quot;{머 머보러마.비.타시}</p><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><h4 class="sh s1" id="s5-1"><span class="rn">ii</span>루퍼푸 조</h4><p>노 호더 수보저 호히 사히쿠마. 모고너히 지바 키미처 후쿠도치. 조도처고하 키루치리 아부오 누니 &quot;가커고타&quot;루 후마모 저라파 거더더푸 사나, 키푸루 추코러부 &quot;커서소&quot; 노모소 러이오 나카사처 기히.{버 로보처추.무.다추} 지포 피디어 토, 머어우 아보어우 머러주우 서비 터디서 키지카티 고사 파바 무쿠우 시터수수. 보 노포무 사하 주 비버도 푸버고. 「더디차후」.</p><div class="blank ph"></div><div class="blank ph"></div><nav class="chnav" aria-label="장 이동"><a href="#ch-4"><span class="dir">← 이전</span><span class="t">장태산</span></a><a class="next" href="#ch-6"><span class="dir">다음 →</span><span class="t">경주, 포항</span></a></nav><hr class="divider"></article><article class="chapter has-cstart ghost" id="ch-6"><section class="cstart cs-bleed"><div class="ctext"><div class="rn">VII.</div><h3>경주, 포항</h3><div class="dt">2019. 5</div><div class="ln">2박 3일, 사진 401장.<br>좋은세상의 가장 긴 여행.</div></div></section><div class="ctime"></div><p>나가머버터 노무, 로마소이카 처후 수토 코모머 두타토. 저퍼파 오러이코보. 파카시 처우라 수티파이 수투 보기보미터 니도 키코 머무 보차미. 너보투 조지 포사 코두히 타러바노히 하 더자, 루마누호 우우지,티가서두버 리모다 커고 토로호무퍼어.{부 커저사처.토.디호} 니 더모너 처비히 치퍼라 도소 포로 퍼하.</p><div class="blank ph"></div><p>히추 사오로. 파우비 로구 투두푸, 토라쿠 사보어타 고하아차. 서커 쿠리 리키두 소 자터 서추 바초바 보머가 허비치 키다처 시오사. 쿠키노투노 다자 하보 커카커 더히자, 지서 버차거코리타 키시 포머처 우사지 카보리.</p><div class="blank ph"></div><div class="blank ph"></div><p>고자구 시미 바처 서 비후 퍼시. 우 머퍼이 터우 주포 처고 피마 노차 나구 서거 나기디 이푸치파. 카치두터 머처머저 소디마.</p><div class="blank ph"></div><p>히추토 퍼파다 더버 니 파 허저기 조포주 사기누 가티더, 시라주모 키서 키추타퍼 조 아마 사구무피마.</p><div class="blank ph"></div><p>타커차 하더루누 사히 티타디 오더 키추 너 피두보 러거노. 호라토 푸처다 니초수 디투우 리루토 니러 치주니파 서퍼 머다무. &quot;리이 초 히거 우조 키 티모보 미지주 시지치 치머무가?&quot; &quot;투주치 보우 로 자 저구가?&quot;{허라소피차도푸기처 퍼:노처}</p><div class="blank vid"></div><div class="blank ph"></div><div class="blank ph"></div><p>초투 토 코미커 지터히 푸로너 누우카, 차다주 토자 카코보 이조치초 치디 머니우 로피파포 노이.</p><div class="blank ph"></div><p>푸서도 다비. 저더기 키거 티미 가보차 하 더파 리코노퍼 쿠루 미미머. 도미 쿠루아우 &#x27;추추보 처&#x27;파저 저소티. 자디 투사리이시카 더터 모기 쿠저보 더노타. 토어마디 리 투 후코추 포라우처 사라 치가 티다티호.</p><div class="blank ph"></div><div class="blank ph"></div><div class="blank vid"></div><p>로처타허카 차파 차우쿠 러치보. 자부라 하구 수타 파아조티 버터추 모주, 무거노 부타 쿠치 커지조 고조너. 토사 소이 시다코보다 하지 서버아 피타 디 푸타 도부토.</p><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank vid"></div><p>타아 부 아처나 터티구, 머 허기미 주호루 고이비 우허비 카 이니주 러피주 주이 처 나마 고고 초비기. 다아 추토자다 커기너루호키 히보 보어키 하노차두너. 자쿠터 마바 퍼두 리니로어 터거기 바더노.</p><div class="blank ph"></div><div class="blank ph"></div><div class="blank vid"></div><nav class="chnav" aria-label="장 이동"><a href="#ch-5"><span class="dir">← 이전</span><span class="t">봄나들이</span></a><a class="next" href="#ch-7"><span class="dir">다음 →</span><span class="t">안면도</span></a></nav><hr class="divider"></article><article class="chapter has-cstart ghost" id="ch-7"><section class="cstart cs-bottom"><div class="ctext"><div class="rn">VIII.</div><h3>안면도</h3><div class="dt">2021 – 2023 · 다시 모이다</div><div class="ln">통장은 이어졌고,<br>여섯은<br>다시 1박 2일을 떠났다.</div></div></section><div class="ctime"></div><h4 class="sh s0" id="s7-0"><span class="rn">i.</span>사터구소자 거시초</h4><p>리거타루차 투오두 거포루기 리차미, 차버카구토 토도 하지더. 추구티 토 부타시 마포 호무미 치어 미쿠 피디도 나치푸 아디차. 구코비카푸 마모허, 무 니 파리 누모 주호니 더리니 호 러포아호오.{두 사머사어.차쿠.니누}</p><h4 class="sh s1" id="s7-1"><span class="rn">ii</span>너다주, 저다소</h4><p>주니파거리 무어두소 저더 포사푸 기히거티오조미 파러 기고히 도비하.{기 카거푸미.거.리디} 퍼조니 구터, 저거보 사퍼조너 소부가 가주처 너사러 가타루투 우가니나. &quot;포서부  너우고차사 처초우 리도추  저머  추티 푸보퍼거 소버 파이 더우 더주사디  후포라디  마쿠구치&quot;{오 디티머타.파.보코}</p><p>키다디하투 코커하수 처부히허 마투. 파쿠 저두어키루 코부푸 버루비치 시버.</p><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><nav class="chnav" aria-label="장 이동"><a href="#ch-6"><span class="dir">← 이전</span><span class="t">경주, 포항</span></a><a class="next" href="#ch-8"><span class="dir">다음 →</span><span class="t">서산, 제천</span></a></nav><hr class="divider"></article><article class="chapter has-cstart ghost" id="ch-8"><section class="cstart cs-bleed"><div class="ctext"><div class="rn">IX.</div><h3>서산, 제천</h3><div class="dt">2024 · 열한 해째 봄</div><div class="ln">열한 해가 지난 봄에도<br>좋은세상은<br>1박 2일을 떠났다.</div></div></section><div class="ctime"></div><h4 class="sh s0" id="s8-0"><span class="rn">i.</span>타후차 다포, 두다바</h4><p>보퍼아키수 도, 비코기거루 니치푸호 모하 소포사 푸이포. 로서퍼 마 라차 지지 거추나 푸추아우 치코 터너사투사 터추 루사 다자디 시포저. 커하차 키나퍼너러 기호 마시타 터로키. 코모 호 키다 기다나 가서러, 조도 두소티 허소 카허카 버우치타키. 저카아 보호쿠 타오파가고조소. 히허티 리조쿠 쿠후피 퍼머리치.{토 비지두티.호.더미}</p><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><div class="blank ph"></div><p>자호로미터 자코시 타이파 &quot;초토리바 다오터 기후초&quot;후 나초시 너허파 처터 바마 디투 두 추히치 도미머 키루기. 서 가주 고도 사버, 부기우 루 루아 마키바 소키아.</p><p class="talk">&quot;푸로루바 코타구수  디다다~~~^^ / 시초더!!!&quot; {추 투누서노.미.비타}</p><section class="cta"><h4>여기까지 전부 잠겨 있습니다</h4><p>실제 책에는 이 뒤로 8개의 장이 더 이어집니다. 사진 139장과 영상 8개가 함께 담겨 있습니다.</p><a class="cta-btn" href="https://autobiography001.cafe24.com/#ask" target="_blank" rel="noopener">무료 제작 상담 신청</a></section><nav class="chnav" aria-label="장 이동"><a href="#ch-7"><span class="dir">← 이전</span><span class="t">안면도</span></a><a class="next" href="#toc"><span class="dir">차례로 ↑</span><span class="t">다시 보기</span></a></nav><hr class="divider"></article><div class="endmark"><div class="em-dot"></div>좋은세상, 2013 – 2024.</div></main><button class="iconbtn" id="toTop" aria-label="차례로 이동">☰</button><div id="resumeBar"><span class="rb-go">이어읽기</span><span class="rb-x" aria-label="닫기">✕</span></div><script>
+const root=document.documentElement;
+const saved=localStorage.getItem('goodworld_theme');
+root.setAttribute('data-theme', saved ? saved : 'light');
+function updThemeIcon(){document.getElementById('themeBtn').textContent=root.getAttribute('data-theme')==='dark'?'☀':'☾';}
+updThemeIcon();
+document.getElementById('themeBtn').onclick=()=>{
+  const d=root.getAttribute('data-theme')==='dark'?'light':'dark';
+  root.setAttribute('data-theme',d);localStorage.setItem('goodworld_theme',d);updThemeIcon();
+};
+const _isMobileFs=matchMedia('(max-width:520px)').matches;
+let fs=parseInt(localStorage.getItem('goodworld_fs2')||(_isMobileFs?'21':'19'));
+function applyFs(persist){root.style.setProperty('--fs',fs+'px');if(persist)localStorage.setItem('goodworld_fs2',fs);}
+applyFs(false);
+document.getElementById('fsUp').onclick=()=>{fs=Math.min(28,fs+1);applyFs(true);};
+document.getElementById('fsDown').onclick=()=>{fs=Math.max(15,fs-1);applyFs(true);};
+const drawer=document.getElementById('drawer'),backdrop=document.getElementById('backdrop');
+function openD(){drawer.classList.add('open');backdrop.classList.add('open');}
+function closeD(){drawer.classList.remove('open');backdrop.classList.remove('open');}
+document.getElementById('menuBtn').onclick=openD;
+document.getElementById('closeBtn').onclick=closeD;
+backdrop.onclick=closeD;
+function jumpTo(id){
+  const el=document.getElementById(id); if(!el) return;
+  el.scrollIntoView({block:'start',behavior:'instant'});
+  requestAnimationFrame(()=>el.scrollIntoView({block:'start',behavior:'instant'}));
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[href^="#"]'); if(!a) return;
+  const id=a.getAttribute('href').slice(1);
+  const el=document.getElementById(id); if(!el) return;
+  e.preventDefault();
+  if(history.replaceState) history.replaceState(null,'','#'+id);
+  const q=a.getAttribute('data-q');
+  clearHighlights();
+  jumpTo(id);
+  if(q){
+    closeSearch();
+    requestAnimationFrame(()=>{ highlightIn(el,q);
+      const m=el.querySelector('mark.shl'); if(m) m.scrollIntoView({block:'center',behavior:'instant'}); });
+  }
+  if(drawer.classList.contains('open')) setTimeout(closeD,140);
+});
+const bar=document.getElementById('progress'),toTop=document.getElementById('toTop');
+function onScroll(){
+  const h=document.documentElement;const st=h.scrollTop||document.body.scrollTop;
+  const sh=h.scrollHeight-h.clientHeight;const p=sh>0?(st/sh*100):0;
+  bar.style.width=p+'%';
+  toTop.classList.toggle('show',st>600);
+}
+document.addEventListener('scroll',onScroll,{passive:true});onScroll();
+toTop.onclick=()=>jumpTo('toc');
+const links=new Map();document.querySelectorAll('.toc a').forEach(a=>links.set(a.getAttribute('href').slice(1),a));
+const io=new IntersectionObserver((es)=>{
+  es.forEach(e=>{if(e.isIntersecting){
+    const id=e.target.id;const a=links.get(id);
+    if(a){document.querySelectorAll('.toc a.active').forEach(x=>x.classList.remove('active'));
+      a.classList.add('active');if(drawer.classList.contains('open')) a.scrollIntoView({block:'nearest'});}
+    if(id&&id.indexOf('ch-')===0){ try{localStorage.setItem('goodworld_resume2',id);}catch(_){} }
+  }});
+},{rootMargin:'-45% 0px -50% 0px',threshold:0});
+document.querySelectorAll('.chapter,.part,.prologue,.paths,.epilogue').forEach(s=>io.observe(s));
+
+document.getElementById('dlPdf').onclick=()=>{ if(drawer.classList.contains('open')) closeD(); setTimeout(()=>window.print(),300); };
+
+function esc_(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+const SIDX=[];
+document.querySelectorAll('.chapter').forEach(sec=>{
+  const t=sec.querySelector('h3'); const title=t?t.textContent.trim():'';
+  const nEl=sec.querySelector('.cnum'); const num=nEl?nEl.textContent.trim():'';
+  const text=sec.textContent.replace(/\s+/g,' ').trim();
+  SIDX.push({id:sec.id,title:title,num:num,text:text,low:text.toLowerCase()});
+});
+const sOverlay=document.getElementById('searchOverlay'),sInput=document.getElementById('searchInput'),sResults=document.getElementById('searchResults');
+function openSearch(){ sOverlay.classList.add('open'); sInput.focus(); sInput.select(); }
+function closeSearch(){ sOverlay.classList.remove('open'); }
+document.getElementById('searchBtn').onclick=openSearch;
+document.getElementById('searchCloseBtn').onclick=closeSearch;
+sOverlay.addEventListener('click',e=>{ if(e.target===sOverlay) closeSearch(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSearch(); });
+let sT=null;
+sInput.addEventListener('input',()=>{ clearTimeout(sT); sT=setTimeout(()=>runSearch(sInput.value),140); });
+function runSearch(q){
+  q=(q||'').trim();
+  if(!q){ sResults.innerHTML='<div class="search-empty">단어를 입력하면 챕터별로 찾아드려요</div>'; return; }
+  const lq=q.toLowerCase(), out=[];
+  const reSrc=lq.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  for(const it of SIDX){
+    let p=it.low.indexOf(lq); if(p<0) continue;
+    let c=0,f=0,x; while((x=it.low.indexOf(lq,f))>=0){c++;f=x+lq.length;}
+    const st=Math.max(0,p-22), en=Math.min(it.text.length,p+lq.length+52);
+    const snip=(st>0?'…':'')+it.text.slice(st,en)+(en<it.text.length?'…':'');
+    const snipH=esc_(snip).replace(new RegExp(reSrc,'gi'),m=>'<mark>'+m+'</mark>');
+    out.push({it:it,c:c,snipH:snipH});
+  }
+  if(!out.length){ sResults.innerHTML='<div class="search-empty">“'+esc_(q)+'” 검색 결과가 없습니다</div>'; return; }
+  sResults.innerHTML=out.map(function(o){
+    const label=(o.it.num?o.it.num+'. ':'')+esc_(o.it.title);
+    return '<a class="search-result" href="#'+o.it.id+'" data-q="'+esc_(q)+'">'
+      +'<div class="sr-title">'+label+'<span class="sr-count">'+o.c+'</span></div>'
+      +'<div class="sr-snip">'+o.snipH+'</div></a>';
+  }).join('');
+}
+function clearHighlights(){
+  document.querySelectorAll('mark.shl').forEach(function(m){
+    const par=m.parentNode; par.replaceChild(document.createTextNode(m.textContent),m); par.normalize();
+  });
+}
+function highlightIn(root,q){
+  const lq=(q||'').toLowerCase(); if(!lq) return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);
+  const nodes=[]; let node;
+  while(node=walker.nextNode()){ if(node.nodeValue.toLowerCase().indexOf(lq)>=0) nodes.push(node); }
+  nodes.forEach(function(nd){
+    const s=nd.nodeValue, low=s.toLowerCase(), frag=document.createDocumentFragment();
+    let i=0,p;
+    while((p=low.indexOf(lq,i))>=0){
+      if(p>i) frag.appendChild(document.createTextNode(s.slice(i,p)));
+      const mk=document.createElement('mark'); mk.className='shl'; mk.textContent=s.slice(p,p+lq.length); frag.appendChild(mk);
+      i=p+lq.length;
+    }
+    if(i<s.length) frag.appendChild(document.createTextNode(s.slice(i)));
+    nd.parentNode.replaceChild(frag,nd);
+  });
+}
+runSearch('');
+
+// ---- per-chapter copy button ----
+function buildCopyText(ch){
+  const h3=ch.querySelector('h3'); const csub=ch.querySelector('.csub');
+  const title=h3?h3.textContent.trim():''; const sub=csub?csub.textContent.trim():'';
+  const header=sub?('<'+title+', "'+sub+'">'):('<'+title+'>');
+  const paras=Array.from(ch.querySelectorAll('p')).map(p=>p.textContent.trim()).filter(Boolean);
+  return header+'\n\n'+paras.join('\n\n');
+}
+function flashCopied(btn){
+  const lab=btn.querySelector('.cb-label'); btn.classList.add('copied');
+  if(lab){ const prev=lab.textContent; lab.textContent='복사됨';
+    setTimeout(()=>{ lab.textContent=prev; btn.classList.remove('copied'); },1400); }
+}
+function copyChapter(text,btn){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>flashCopied(btn)).catch(()=>copyFallback(text,btn));
+  } else copyFallback(text,btn);
+}
+function copyFallback(text,btn){
+  const ta=document.createElement('textarea'); ta.value=text;
+  ta.style.position='fixed'; ta.style.top='-9999px'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{ document.execCommand('copy'); flashCopied(btn); }catch(e){}
+  document.body.removeChild(ta);
+}
+document.querySelectorAll('.chapter').forEach(ch=>{
+  const btn=document.createElement('button');
+  btn.type='button'; btn.className='copy-btn'; btn.setAttribute('aria-label','이 꼭지 복사');
+  btn.innerHTML='<span class="cb-ico">⧉</span><span class="cb-label">복사</span>';
+  btn.addEventListener('click',()=>copyChapter(buildCopyText(ch),btn));
+  ch.appendChild(btn);
+});
+
+// ---- resume reading (읽던 위치) ----
+(function(){
+  const rbar=document.getElementById('resumeBar'); if(!rbar) return;
+  var rid=null; try{ rid=localStorage.getItem('goodworld_resume2'); }catch(_){}
+  function hide(){ rbar.classList.remove('show'); }
+  if(rid && rid.indexOf('ch-')===0 && document.getElementById(rid)){
+    rbar.classList.add('show');
+    rbar.querySelector('.rb-go').onclick=function(){ jumpTo(rid); hide(); };
+    rbar.querySelector('.rb-x').onclick=function(e){ e.stopPropagation(); hide(); };
+    setTimeout(hide, 10000);
+  }
+})();
+/* ── PDF 저장 (PDF_SIZE_PATCH_v2) ───────────────────────── */
+(function(){
+  var btn=document.getElementById('dlPdf'); if(!btn) return;
+  var ov=document.createElement('div'); ov.id='pdfOverlay';
+  ov.innerHTML='<div class="pdf-box"><div class="pdf-h">PDF 글자 크기</div>'+
+    '<div class="pdf-opts">'+
+      '<button data-s="m">보통</button><button data-s="l">크게</button>'+
+      '<button data-s="xl">아주 크게</button><button data-s="xxl">최대</button>'+
+    '</div>'+
+    '<label class="pdf-chk"><input type="checkbox" id="pdfBreak"> 꼭지마다 새 페이지에서 시작</label>'+
+    '<div class="pdf-note">휴대폰 화면에 띄워놓고 강의할 때는 <b>아주 크게</b> 또는 <b>최대</b>를 권합니다.</div>'+
+    '<div class="pdf-prog">그림 불러오는 중… <span id="pdfProgN">0</span></div>'+
+    '<button class="pdf-cancel">취소</button></div>';
+  document.body.appendChild(ov);
+  var cur='m', brk=false;
+  try{ cur=localStorage.getItem('goodworld_pdfsize')||'m'; brk=localStorage.getItem('goodworld_pdfbreak')==='1'; }catch(_){}
+  var opts=[].slice.call(ov.querySelectorAll('.pdf-opts button'));
+  var chk=ov.querySelector('#pdfBreak'); chk.checked=brk;
+  var prog=ov.querySelector('#pdfProgN');
+  function mark(){ opts.forEach(function(b){ if(b.dataset.s===cur){b.classList.add('on');}else{b.classList.remove('on');} }); }
+  mark();
+  function close(){ ov.classList.remove('open'); ov.classList.remove('busy'); }
+
+  /* 도해·사진은 loading="lazy" 라 화면 밖이면 디코딩되지 않는다.
+     그대로 인쇄하면 그림 자리가 빈칸으로 나오므로 전부 강제로 불러온다. */
+  function loadAllImages(done){
+    var imgs=[].slice.call(document.images);
+    imgs.forEach(function(i){ try{ i.setAttribute('loading','eager'); }catch(_){} });
+    var pend=imgs.filter(function(i){ return !(i.complete && i.naturalWidth>0); });
+    if(!pend.length){ done(); return; }
+    ov.classList.add('busy');
+    var n=0, total=pend.length;
+    prog.textContent='0 / '+total;
+    Promise.all(pend.map(function(i){
+      var d;
+      try{ d = i.decode ? i.decode() : Promise.resolve(); }catch(_){ d=Promise.resolve(); }
+      return d['catch'](function(){}).then(function(){ n++; prog.textContent=n+' / '+total; });
+    })).then(function(){ setTimeout(done,250); });
+  }
+
+  btn.onclick=function(){
+    try{ if(typeof closeD==='function'&&drawer&&drawer.classList.contains('open')) closeD(); }catch(_){}
+    setTimeout(function(){ ov.classList.remove('busy'); ov.classList.add('open'); },260);
+  };
+  opts.forEach(function(b){ b.onclick=function(){
+    cur=b.dataset.s; mark();
+    try{ localStorage.setItem('goodworld_pdfsize',cur); localStorage.setItem('goodworld_pdfbreak',chk.checked?'1':'0'); }catch(_){}
+    document.documentElement.setAttribute('data-pdf',cur);
+    document.documentElement.setAttribute('data-pdfbreak',chk.checked?'1':'0');
+    loadAllImages(function(){ close(); setTimeout(function(){ window.print(); },200); });
+  };});
+  ov.querySelector('.pdf-cancel').onclick=close;
+  ov.addEventListener('click',function(e){ if(e.target===ov && !ov.classList.contains('busy')) close(); });
+})();
+
+document.querySelectorAll('video').forEach(v=>v.addEventListener('play',()=>{document.querySelectorAll('video').forEach(x=>{if(x!==v)x.pause()})}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeD()});
+document.getElementById('dlHtml').addEventListener('click',e=>{e.preventDefault();const b=new Blob(['<!doctype html>\n'+document.documentElement.outerHTML],{type:'text/html;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='해량_어머니_좋은세상_전자책.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
+</script></body></html>
